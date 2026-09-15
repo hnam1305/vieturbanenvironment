@@ -24,7 +24,7 @@ RenderSettings:
   m_AmbientEquatorColor: {r: 0.114, g: 0.125, b: 0.133, a: 1}
   m_AmbientGroundColor: {r: 0.047, g: 0.043, b: 0.035, a: 1}
   m_AmbientIntensity: 1
-  m_AmbientMode: 1
+  m_AmbientMode: 3
   m_SubtractiveShadowColor: {r: 0.42, g: 0.478, b: 0.627, a: 1}
   m_SkyboxMaterial: {fileID: 10304, guid: 0000000000000000f000000000000000, type: 0}
   m_HaloStrength: 0.5
@@ -37,7 +37,7 @@ RenderSettings:
   m_ReflectionBounces: 1
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
-  m_Sun: {fileID: 410087040}
+  m_Sun: {fileID: 0}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -217575,20 +217575,20 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7b1648e1b62b26a45b9bd7524242fa7c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: '::'
-  timeMultiplier: 2000
+  timeMultiplier: 1000
   startHour: 15
   timeText: {fileID: 1014159591}
   sunLight: {fileID: 410087040}
   sunriseHour: 5
   sunsetHour: 20
   dayAmbientLight: {r: 0.56078434, g: 0.6039216, b: 0.68235296, a: 0}
-  nightAmbientLight: {r: 0.013082952, g: 0.019607844, b: 0.03137255, a: 0}
+  nightAmbientLight: {r: 0.01050195, g: 0.02402871, b: 0.03773582, a: 0}
   lightChangeCurve:
     serializedVersion: 2
     m_Curve:
     - serializedVersion: 3
-      time: 0
-      value: 0
+      time: -0.00000025518239
+      value: -0.000005528331
       inSlope: 2
       outSlope: 2
       tangentMode: 0
@@ -217610,6 +217610,8 @@ MonoBehaviour:
   maxSunLightIntensity: 1
   moonLight: {fileID: 1202759478}
   maxMoonLightIntensity: 0.1
+  dayExposure: 1
+  nightExposure: 0.1
 --- !u!4 &1422249256
 Transform:
   m_ObjectHideFlags: 0
@@ -235808,7 +235810,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 9005220659476430818, guid: 2d3a85ecde41a8246a79669975912b74, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 5.985
+      value: 1.415
       objectReference: {fileID: 0}
     - target: {fileID: 9005220659476430818, guid: 2d3a85ecde41a8246a79669975912b74, type: 3}
       propertyPath: m_LocalPosition.z
@@ -241035,7 +241037,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8997996947095583982, guid: c5efc39a8aaf6e64ea40e9ad573e9b47, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 4.61
+      value: 0.04
       objectReference: {fileID: 0}
     - target: {fileID: 8997996947095583982, guid: c5efc39a8aaf6e64ea40e9ad573e9b47, type: 3}
       propertyPath: m_LocalPosition.z
@@ -286556,6 +286558,10 @@ PrefabInstance:
       value: MEDIAN
       objectReference: {fileID: 0}
     - target: {fileID: 1074475202552769813, guid: f2c5a696050906743a6a8e8948f59532, type: 3}
+      propertyPath: m_Materials.Array.size
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 1074475202552769813, guid: f2c5a696050906743a6a8e8948f59532, type: 3}
       propertyPath: 'm_Materials.Array.data[0]'
       value: 
       objectReference: {fileID: -8061598122303629434, guid: f2c5a696050906743a6a8e8948f59532, type: 3}
@@ -297524,7 +297530,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8762286023885395322, guid: 9c489a8547f4d9e4387da15a4ff82c81, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 5.985
+      value: 1.415
       objectReference: {fileID: 0}
     - target: {fileID: 8762286023885395322, guid: 9c489a8547f4d9e4387da15a4ff82c81, type: 3}
       propertyPath: m_LocalPosition.z

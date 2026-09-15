@@ -46,9 +46,6 @@ public class TimeController : MonoBehaviour
         currentTime = DateTime.Now.Date + TimeSpan.FromHours(startHour);
         sunriseTime = TimeSpan.FromHours(sunriseHour);
         sunsetTime = TimeSpan.FromHours(sunsetHour);
-
-        // Lấy skybox đang được gán trong Lighting Settings và tạo 1 bản sao
-        // để không làm thay đổi vĩnh viễn material gốc dùng chung cho project
         if (RenderSettings.skybox != null)
         {
             skyboxMaterial = new Material(RenderSettings.skybox);
@@ -77,7 +74,6 @@ public class TimeController : MonoBehaviour
     {
         float rotation = CalculateCelestialRotation();
         sunLight.transform.rotation = Quaternion.AngleAxis(rotation, Vector3.right);
-        // Mặt trăng luôn ở vị trí đối xứng 180 độ so với mặt trời
         moonLight.transform.rotation = Quaternion.AngleAxis(rotation + 180f, Vector3.right);
     }
 
