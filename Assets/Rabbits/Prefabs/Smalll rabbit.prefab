@@ -798,6 +798,8 @@ MonoBehaviour:
   waitCounter: 0
   isWalking: 0
   gravity: -9.8
+  stuckInterval: 0.5
+  stuckDistance: 0.02
 --- !u!143 &-9044197043924817921
 CharacterController:
   m_ObjectHideFlags: 0
@@ -818,7 +820,7 @@ CharacterController:
   serializedVersion: 3
   m_Height: 1
   m_Radius: 0.2
-  m_SlopeLimit: 20
+  m_SlopeLimit: 40
   m_StepOffset: 0.1
   m_SkinWidth: 0.08
   m_MinMoveDistance: 0.001
