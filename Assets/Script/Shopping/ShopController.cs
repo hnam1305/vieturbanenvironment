@@ -6,7 +6,6 @@ public class ShopController : MonoBehaviour
     [SerializeField] private ItemCardUI cardPrefab;
     [SerializeField] private Transform cardsParent;
     [SerializeField] private CartManager cartManager;
-
     private void Start()
     {
         foreach (ItemData data in shopItems)
