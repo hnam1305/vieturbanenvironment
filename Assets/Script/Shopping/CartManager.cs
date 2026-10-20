@@ -48,7 +48,7 @@ public class CartManager : MonoBehaviour
         checkoutButton.onClick.AddListener(HandleCheckout);
         RefreshUI();
         playerWallet.MoneyChange += HandleMoneyChanged;
-    }
+    }   
     private void OnDestroy()
     {
         if (playerWallet != null)
@@ -98,7 +98,7 @@ public class CartManager : MonoBehaviour
     }
 
     private void HandleCheckout()
-    {
+    { 
         if (_cart.Count == 0)
         {
             return;

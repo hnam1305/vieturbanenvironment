@@ -9,16 +9,29 @@ public class ShopOpener : MonoBehaviour
 
     [Header("Interact")]
     [SerializeField] private Camera playerCamera;
-    [SerializeField] private float interactDistance = 6f;
+    [SerializeField] private float interactDistance = 10f;
     [SerializeField] private LayerMask raycastMask = ~0;
 
     [Header("Lock the control when open")]
     [SerializeField] private MonoBehaviour[] disableWhileOpen;
+
+    [Header("Process payment")]
     [SerializeField] private CartManager cartManager;
     [SerializeField] private NPCGiveItem npc;
     private bool purchasedThisPhase;
 
-    public bool IsOpen { get; private set; }
+    private bool isOpen;
+    public bool IsOpen
+    {
+        get
+        {
+            return isOpen;
+        }
+        private set
+        {
+            isOpen = value;
+        }
+    }
 
     private CursorLockMode previousLockState;
     private bool previousCursorVisible;

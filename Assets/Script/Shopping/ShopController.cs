@@ -12,7 +12,11 @@ public class ShopController : MonoBehaviour
         {
             ItemCardUI card = Instantiate(cardPrefab, cardsParent);
             card.Setup(data);
-            card.OnAddToCart += (item, amount) => cartManager.TryAddItem(item, amount);
+            card.OnAddToCart += HandleAddToCart;
         }
+    }
+    private void HandleAddToCart(ItemData item, float amount)
+    {
+        cartManager.TryAddItem(item, amount);
     }
 }

@@ -28,14 +28,22 @@ public class ItemCardUI : MonoBehaviour
     private float _currentAmount;
     private void Awake()
     {
-        decreaseButton.onClick.AddListener(() => ChangeQuantity(-1));
-        increaseButton.onClick.AddListener(() => ChangeQuantity(1));
+        decreaseButton.onClick.AddListener(DecreaseQuantity);
+        increaseButton.onClick.AddListener(IncreaseQuantity);
         gramSlider.onValueChanged.AddListener(OnSliderChanged);
         addButton.onClick.AddListener(HandleAddClicked);
     }
+    private  void DecreaseQuantity()
+    {
+        ChangeQuantity(-1);
+    }
+    private void IncreaseQuantity()
+    {
+        ChangeQuantity(1);
+    }
     public void Setup(ItemData data)
     {
-        _data = data;
+        _data = data;       
         nameText.text = data.itemName;
         descriptionText.text = data.description;
         iconImage.sprite = data.icon;
@@ -96,7 +104,10 @@ public class ItemCardUI : MonoBehaviour
         {
             return;
         }
-        OnAddToCart?.Invoke(_data, _currentAmount);
+        if (OnAddToCart != null)
+        {
+            OnAddToCart(_data, _currentAmount);
+        }
         _currentAmount = 0;
         if (_data.sellType == SellType.Gram)
         {
