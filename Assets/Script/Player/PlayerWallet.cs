@@ -3,7 +3,13 @@ using System;
 public class PlayerWallet : MonoBehaviour
 {
     
-    private PlayerData playerData = new PlayerData();
+    private PlayerData playerData
+    {
+        get
+        {
+            return GameSession.Current;
+        }
+    }
     public event Action<int> MoneyChange;
     public int Money
     {

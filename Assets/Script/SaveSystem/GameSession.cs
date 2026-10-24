@@ -22,5 +22,9 @@ public class GameSession
         }
     }
 
- 
+    public static void StartNewGame()
+    {
+        SaveSystem.DeleteGame();
+        current = new PlayerData();
+    }
 }

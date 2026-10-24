@@ -113,6 +113,8 @@ public class CartManager : MonoBehaviour
         {
             playerWallet.AddItem(entry.item.itemId, entry.amount);
         }
+        Debug.Log("checkout saving");
+        SaveSystem.SaveGame(GameSession.Current);
         _cart.Clear();
         _currentLoad = 0;
         RefreshUI();
