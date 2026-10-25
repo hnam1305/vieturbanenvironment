@@ -16,7 +16,9 @@ public class MainMenuUI : MonoBehaviour
         {
             ContinueButton.gameObject.SetActive(false);
         }
-
+        Time.timeScale = 1f;
+        Cursor.lockState = CursorLockMode.None;
+        Cursor.visible = true;
     }
 
 

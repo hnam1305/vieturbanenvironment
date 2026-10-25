@@ -19,6 +19,8 @@ public class ShopOpener : MonoBehaviour
     [SerializeField] private CartManager cartManager;
     [SerializeField] private NPCGiveItem npc;
     private bool purchasedThisPhase;
+    public static bool AnyOpen;
+    public static int LastCloseFrame = -1;
 
     private bool isOpen;
     public bool IsOpen
@@ -47,9 +49,13 @@ public class ShopOpener : MonoBehaviour
         {
             shopRoot.SetActive(false);
         }
+        AnyOpen = false;
     }
     private void Update()
     {
+        if (PauseMenuUI.IsPaused) {
+            return;
+        }
         if (IsOpen)
         {
             if (EscapePressed())
@@ -105,6 +111,7 @@ public class ShopOpener : MonoBehaviour
             return;
         }
         IsOpen = true;
+        AnyOpen = true;
         previousLockState = Cursor.lockState;
         previousCursorVisible = Cursor.visible;
         shopRoot.SetActive(true);
@@ -125,6 +132,8 @@ public class ShopOpener : MonoBehaviour
             return;
         }
         IsOpen = false;
+        AnyOpen = false;
+        LastCloseFrame = Time.frameCount;
         shopRoot.SetActive(false);
         if (crosshair != null)
         {
