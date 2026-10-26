@@ -3,9 +3,9 @@ public class AudioZone : MonoBehaviour
 {
     [SerializeField] private AudioSource audioSource;
     [SerializeField] private float maxVolume = 0.8f;
-    [SerializeField] private float minVolume = 0f;
-    [SerializeField] private float fadeSpeed = 0.5f;
-    private bool playerInside;
+    [SerializeField] private Transform player;
+    [SerializeField] private Collider zoneCollider;
+    [SerializeField] private float fadeDistance = 20;
     void Start()
     {
         if (audioSource == null)
@@ -13,34 +13,15 @@ public class AudioZone : MonoBehaviour
             audioSource = GetComponent<AudioSource>();
         }
     }
-    private void OnTriggerEnter(Collider other)
-    {
-        if (other.CompareTag("Player"))
-        {
-            playerInside = true;
-        }
-       
-    }
-    private void OnTriggerExit(Collider other)
-    {
-        if (other.CompareTag("Player"))
-        {
-            playerInside = false;
-        }
-    }
+    
 
-    // Update is called once per frame
     void Update()
     {
-        float target;
-        if (playerInside)
-        {
-            target = maxVolume;
-        }
-        else
-        {
-            target = minVolume;
-        }
-        audioSource.volume = Mathf.MoveTowards(audioSource.volume, target, fadeSpeed * Time.deltaTime);
+        Vector3 closest = zoneCollider.ClosestPoint(player.position);
+        float distance = Vector3.Distance(player.position, closest);
+        float distanceToVolume = Mathf.Clamp01(1 - distance / fadeDistance);
+        float result = distanceToVolume * maxVolume;
+        audioSource.volume = result;
+
     }
 }
