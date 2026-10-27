@@ -1,4 +1,5 @@
 using UnityEngine;
+[System.Serializable]
 public class InventoryEntries
 {
     public string itemId;

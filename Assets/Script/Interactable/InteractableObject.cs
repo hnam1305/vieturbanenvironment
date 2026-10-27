@@ -7,4 +7,9 @@ public class InteractableObject : MonoBehaviour
     {
         return ItemName;
     }
+
+    public virtual void Interact()
+    {
+        Debug.Log("clicked");
+    }
 }
