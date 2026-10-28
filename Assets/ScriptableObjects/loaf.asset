@@ -10,12 +10,12 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 690e58f1e27948a4ebd16b6d11bcb6d7, type: 3}
-  m_Name: bread
+  m_Name: loaf
   m_EditorClassIdentifier: Assembly-CSharp::ItemData
-  itemId: bread
-  itemName: Bread
+  itemId: 'Loaf '
+  itemName: Loaf
   category: 0
-  sellType: 0
+  sellType: 1
   basePriceBuy: 20
   description: Gion ngon
   limitPerBuying: 500

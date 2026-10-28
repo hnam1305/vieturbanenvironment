@@ -8,7 +8,7 @@ public class IngredientStation : InteractableObject
     [SerializeField] private float portionPerClick;
     [SerializeField] private GameObject fullVisual;
     [SerializeField] private GameObject emptyVisual;
-    [SerializeField] private string itemId;
+    [SerializeField] private ItemData ingredient;
     private void Start()
     {
         UpdateVisual();
@@ -39,13 +39,13 @@ public class IngredientStation : InteractableObject
     public void Fill(float amount)
     {
         float space = capacity - currentAmount;
-        float haveInInventory = GameSession.Current.GetAmount(itemId);
+        float haveInInventory = GameSession.Current.GetAmount(ingredient.itemId); //tranh loi go itemId khong khop thi kho tra ve 0
         float toFill = Mathf.Min(amount, space, haveInInventory);
         if (toFill <= 0)
         {
             return;
         }
-        if (GameSession.Current.TryRemove(itemId, toFill))
+        if (GameSession.Current.TryRemove(ingredient.itemId, toFill))
         {
             currentAmount += toFill;
 
