@@ -9,6 +9,7 @@ public class IngredientStation : InteractableObject
     [SerializeField] private GameObject fullVisual;
     [SerializeField] private GameObject emptyVisual;
     [SerializeField] private ItemData ingredient;
+    [SerializeField] private CookingSession cookingSession;
     private void Start()
     {
         UpdateVisual();
@@ -22,7 +23,11 @@ public class IngredientStation : InteractableObject
     }
     public override void Interact()
     {
-        Take();
+        float taken = Take();
+        if (taken > 0 && cookingSession != null)
+        {
+            cookingSession.AddedIngredient(ingredient, taken);
+        }
         Debug.Log("con lai" + currentAmount);
     }
     public float Take()
