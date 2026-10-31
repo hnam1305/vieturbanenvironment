@@ -1,7 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
 using System.Collections;
-using Unity.Mathematics;
 [System.Serializable]
 public class CookingResult
 {
@@ -15,8 +14,18 @@ public class CookingSession : MonoBehaviour
 {
     [SerializeField] private RecipeData currentRecipe;
     [SerializeField] private Transform dishPoint;
+    public event System.Action<float> OnProgress;
+    public event System.Action<RecipeData, CookingResult> OnDishCooked;
     private bool isCooking;
+    private GameObject spawnedDish;
     private Dictionary<string, float> addedAmount = new Dictionary<string, float>();
+    public bool CanAccept
+    {
+        get
+        {
+            return !isCooking;
+        }
+    }
 
     private void Update()
     {
@@ -33,6 +42,10 @@ public class CookingSession : MonoBehaviour
     }
     public void AddedIngredient(ItemData ingredient, float amount)
     {
+        if (isCooking)
+        {
+            return;
+        }
         if (addedAmount.TryGetValue(ingredient.itemId, out float currentAmount))
         {
             addedAmount[ingredient.itemId] = currentAmount + amount;
@@ -89,34 +102,72 @@ public class CookingSession : MonoBehaviour
         {
             return;
         }
+        if (dishPoint == null)
+        {
+            Debug.Log("missing dish point!");
+            return;
+        }
+        if (currentRecipe.IncompletedDish == null || currentRecipe.CompletedDish == null)
+        {
+            Debug.Log("missing dish");
+            return;
+        }
         if (addedAmount.Count == 0)
         {
             return;
         }
+        if (spawnedDish != null)
+        {
+            Destroy(spawnedDish);
+        }
+
+        
         CookingResult result = Evaluate();
         isCooking = true;
         StartCoroutine(CookRoutine(result));
     }
     private IEnumerator CookRoutine(CookingResult result)
     {
+        RecipeData recipe = currentRecipe;
         float time = 0f;
-        while (time < currentRecipe.CookTime)
+        while (time < recipe.CookTime)
         {
             time += Time.deltaTime;
+            if (OnProgress != null)
+            {
+                OnProgress(Mathf.Clamp01(time / recipe.CookTime));
+            }
             yield return null;
+        }
+        if (OnProgress != null)
+        {
+            OnProgress(1f);
         }
         GameObject prefabs;
         if (result.isCorrect)
         {
-            prefabs = currentRecipe.CompletedDish;
+            prefabs = recipe.CompletedDish;
         }
         else
         {
-            prefabs = currentRecipe.IncompletedDish;
+            prefabs = recipe.IncompletedDish;
         }
-        Instantiate(prefabs, dishPoint.position, quaternion.identity);
+        if (prefabs != null && dishPoint != null)
+        {
+            spawnedDish = Instantiate(prefabs, dishPoint.position, Quaternion.identity);
+
+        }
+        else
+        {
+            Debug.Log("can not find prefabs");
+        }
+        
         addedAmount.Clear();
         isCooking = false;
+        if (OnDishCooked != null)
+        {
+            OnDishCooked(recipe, result);
+        }
     } 
 
         

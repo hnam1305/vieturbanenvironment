@@ -23,7 +23,12 @@ public class IngredientStation : InteractableObject
     }
     public override void Interact()
     {
+        if (cookingSession == null || cookingSession.CanAccept == false)
+        {
+            return;
+        }
         float taken = Take();
+        
         if (taken > 0 && cookingSession != null)
         {
             cookingSession.AddedIngredient(ingredient, taken);
