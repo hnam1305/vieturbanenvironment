@@ -98,24 +98,13 @@ public class Order
         orderStatus = OrderState.Cooking;
         return true;
     }
-
-    public bool StartMakeUp()
-    {
-        if (orderStatus != OrderState.WaitingConfirm)
-        {
-            return false;
-        }
-        orderStatus = OrderState.Making;
-        return true;
-    }
-
     public bool AddCookedResults(List<CookingResult> newResults)
     {
         if (orderStatus != OrderState.Cooking)
         {
             return false;
         }
-        if(newResults == null || newResults.Count == 0)
+        if (newResults == null || newResults.Count == 0)
         {
             return false;
         }
@@ -124,13 +113,25 @@ public class Order
         orderStatus = OrderState.WaitingConfirm;
         return true;
     }
-
-    public bool Confirm()
+    public bool StartMakeUp()
     {
         if (IsComplete == true)
         {
             return false;
         }
+        if (orderStatus != OrderState.WaitingConfirm)
+        {
+            return false;
+        }
+        orderStatus = OrderState.Making;
+        return true;
+    }
+
+    
+
+    public bool Confirm()
+    {
+      
         if (orderStatus != OrderState.WaitingConfirm)
         {
             return false;
