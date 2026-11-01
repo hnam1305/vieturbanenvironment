@@ -98,7 +98,7 @@ public class Order
         orderStatus = OrderState.Cooking;
         return true;
     }
-    public bool AddCookedResults(List<CookingResult> newResults)
+    public bool AddCookedResults(IReadOnlyList<CookingResult> newResults)
     {
         if (orderStatus != OrderState.Cooking)
         {
