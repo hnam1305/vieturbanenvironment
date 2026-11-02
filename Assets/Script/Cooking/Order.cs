@@ -13,6 +13,28 @@ public class Order
     [SerializeField] private int producedCount; //tong so cai da lam/me
     [SerializeField] private OrderState orderStatus;
     private List<CookingResult> results; //ket qua du/thieu/thua cua tung cai da lam
+    private int orderId;
+    private int unitPrice;
+    private bool isCreated = false;
+
+    public bool IsCreated
+    {
+        get { return isCreated; }
+    }
+    public int OrderId
+    {
+        get
+        {
+            return orderId;
+        }
+    }
+    public int UnitPrice
+    {
+        get
+        {
+            return unitPrice;
+        }
+    }
 
     public RecipeData Recipe
     {
@@ -69,13 +91,22 @@ public class Order
             return results;
         }
     }
-    public Order(RecipeData recipe, int requiredCount)
+    public int Total
+    {
+        get
+        {
+            return requiredCount * unitPrice;
+        }
+    }
+    public Order(RecipeData recipe, int requiredCount, int orderId, int unitPrice)
     {
         this.recipe = recipe;
         this.orderStatus = OrderState.Available;
         producedCount = 0;
         this.requiredCount = Math.Max(1, requiredCount);
         results = new List<CookingResult>();
+        this.orderId = orderId;
+        this.unitPrice = Math.Max(0, unitPrice);
     }
 
     public bool StartMaking()
@@ -137,6 +168,16 @@ public class Order
             return false;
         }
         orderStatus = OrderState.Closed;
+        return true;
+    }
+
+    public bool MarkBoxCreated()
+    {
+        if (orderStatus != OrderState.Closed || IsCreated == true)
+        {
+            return false;
+        }
+        isCreated = true;
         return true;
     }
 

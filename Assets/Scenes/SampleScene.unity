@@ -485384,6 +485384,9 @@ GameObject:
   m_Component:
   - component: {fileID: 1525265416}
   - component: {fileID: 1525265415}
+  - component: {fileID: 1525265417}
+  - component: {fileID: 1525265419}
+  - component: {fileID: 1525265418}
   m_Layer: 0
   m_Name: GameObject
   m_TagString: Untagged
@@ -485419,6 +485422,45 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1525265417
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1525265414}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ba1166e789de4b449b9ae85569b6105f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CookingBatchDebug
+  recipeData: {fileID: 11400000, guid: 756736bb23d6f6d4b8eea2bf156f86d6, type: 2}
+--- !u!114 &1525265418
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1525265414}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b4a751c77d6c9414fbc94a23ddac5a72, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CookingOvenDebug
+  recipeData: {fileID: 11400000, guid: 756736bb23d6f6d4b8eea2bf156f86d6, type: 2}
+  oven: {fileID: 1525265419}
+--- !u!114 &1525265419
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1525265414}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 538c59853c3fdf141a02fbc1edcf9552, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CookingOven
 --- !u!1001 &1525337176
 PrefabInstance:
   m_ObjectHideFlags: 0

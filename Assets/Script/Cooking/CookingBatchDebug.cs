@@ -20,7 +20,7 @@ public class CookingBatchDebug : MonoBehaviour
     {
         if (Input.GetKeyDown(KeyCode.Y)) {
             ticking = false;
-            order = new Order(recipeData, 3);
+            order = new Order(recipeData, 3, 1, 10000);
             batch = new CookingBatch(order);
             Log("Start Cooking", batch.StartCooking());
             Log("Stage", batch.Stage(null));

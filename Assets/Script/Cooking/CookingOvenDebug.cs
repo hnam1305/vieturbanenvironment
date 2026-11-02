@@ -24,7 +24,7 @@ public class CookingOvenDebug : MonoBehaviour
     {
         if(Input.GetKeyDown(KeyCode.U))
         {
-            Order order = new Order(recipeData, 3);
+            Order order = new Order(recipeData, 3, 1, 10000);
             order.StartMaking();
             CookingBatch batch = new CookingBatch(order);
             batch.Stage(new CookingResult());
