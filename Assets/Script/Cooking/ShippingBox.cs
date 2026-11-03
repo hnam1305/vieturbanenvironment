@@ -44,7 +44,7 @@ public class ShippingBox : InteractableObject
         {
             return false;
         }
-        if (shelf == null)
+        if (newShelf == null)
         {
             return false;
         }

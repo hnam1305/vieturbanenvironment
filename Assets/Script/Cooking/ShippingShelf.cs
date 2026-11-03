@@ -43,15 +43,17 @@ public class ShippingShelf : MonoBehaviour
         {
             return false;
         }
-        if (order.MarkBoxCreated() == false)
-        {
-            return false;
-        }
+       
         ShippingBox box = Instantiate(prefab, slots[index].position, slots[index].rotation);
         if (box.SetUp(order, this, index) == false)
         {
             Destroy(box.gameObject);
             Debug.Log("set up fail");
+            return false;
+        }
+        if (order.MarkBoxCreated() == false)
+        {
+            Destroy(box.gameObject);
             return false;
         }
         boxes[index] = box;

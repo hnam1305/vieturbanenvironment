@@ -125,6 +125,10 @@ public class OrderManager : MonoBehaviour
             return false;
         }
         selectedOrder.StartMakeUp();
+        if (selectedOrder.StartMakeUp() == false)
+        {
+            return false;
+        }
         bool success = cookingSession.BeginOrder(selectedOrder);
         if (success == false)
         {
