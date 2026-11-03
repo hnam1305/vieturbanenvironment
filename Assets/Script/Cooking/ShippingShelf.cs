@@ -48,7 +48,7 @@ public class ShippingShelf : MonoBehaviour
             return false;
         }
         ShippingBox box = Instantiate(prefab, slots[index].position, slots[index].rotation);
-        if (box.SetUp(order) == false)
+        if (box.SetUp(order, this, index) == false)
         {
             Destroy(box.gameObject);
             Debug.Log("set up fail");
@@ -57,6 +57,15 @@ public class ShippingShelf : MonoBehaviour
         boxes[index] = box;
         return true;
 
+    }
+    public void ReleaseSlot(int index)
+    {
+        if (index < 0 || index >= boxes.Length)
+        {
+            return;
+        }
+        boxes[index] = null;
+        Debug.Log("Released shelf slot: " + index);
     }
     void Start()
     {

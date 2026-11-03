@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using UnityEngine;
-using System.Collections;
 [System.Serializable]
 public class CookingResult
 {
@@ -10,20 +9,22 @@ public class CookingResult
 
 
 }
+//hold the ingredient then evaluate it, assign the result to current batch
 public class CookingSession : MonoBehaviour
 {
-    [SerializeField] private RecipeData currentRecipe;
-    [SerializeField] private Transform dishPoint;
-    public event System.Action<float> OnProgress;
-    public event System.Action<RecipeData, CookingResult> OnDishCooked;
-    private bool isCooking;
-    private GameObject spawnedDish;
+    private RecipeData currentRecipe;
+    private CookingBatch currentBatch;
+    [SerializeField] CookingOven oven;
     private Dictionary<string, float> addedAmount = new Dictionary<string, float>();
     public bool CanAccept
     {
         get
         {
-            return !isCooking;
+            if (currentBatch != null && currentBatch.State == BatchState.Staging)
+            {
+                return true;
+            }
+            return false;
         }
     }
 
@@ -37,12 +38,17 @@ public class CookingSession : MonoBehaviour
         }
         if (Input.GetKeyDown(KeyCode.K))
         {
-            StartCooking();
+            Debug.Log("startCookingBatch: " + StartCookingBatch());
+        }
+        if (Input.GetKeyDown(KeyCode.J))
+        {
+            //StageDish();
+            Debug.Log("stageDish: " + StageDish());
         }
     }
     public void AddedIngredient(ItemData ingredient, float amount)
     {
-        if (isCooking)
+        if (CanAccept == false)
         {
             return;
         }
@@ -96,79 +102,55 @@ public class CookingSession : MonoBehaviour
         }
         return result;
     }
-    public void StartCooking()
+    public bool BeginOrder(Order order) //start making an order
     {
-        if (isCooking == true || currentRecipe == null)
+        if (order == null || order.OrderStatus != Order.OrderState.Making || order.Recipe == null)
         {
-            return;
+            return false;
         }
-        if (dishPoint == null)
+        if (addedAmount.Count > 0 || currentBatch != null && currentBatch.StagedCount > 0)
         {
-            Debug.Log("missing dish point!");
-            return;
+            return false;
         }
-        if (currentRecipe.IncompletedDish == null || currentRecipe.CompletedDish == null)
+        currentRecipe = order.Recipe;
+        currentBatch = new CookingBatch(order);
+        return true;
+    }
+    public bool StageDish() {
+        if (currentBatch == null || CanAccept == false || addedAmount.Count == 0)
         {
-            Debug.Log("missing dish");
-            return;
+            Debug.Log("khong co me");
+            return false;
+        }
+        if (CanAccept == false)
+        {
+            Debug.Log("dia k nhan");
+            return false;
         }
         if (addedAmount.Count == 0)
         {
-            return;
+            Debug.Log("dia trong");
+            return false;
         }
-        if (spawnedDish != null)
-        {
-            Destroy(spawnedDish);
-        }
-
-        
         CookingResult result = Evaluate();
-        isCooking = true;
-        StartCoroutine(CookRoutine(result));
-    }
-    private IEnumerator CookRoutine(CookingResult result)
-    {
-        RecipeData recipe = currentRecipe;
-        float time = 0f;
-        while (time < recipe.CookTime)
-        {
-            time += Time.deltaTime;
-            if (OnProgress != null)
-            {
-                OnProgress(Mathf.Clamp01(time / recipe.CookTime));
-            }
-            yield return null;
+        if (currentBatch.Stage(result) == false){
+            Debug.Log("me tu choi mon");
+            return false;
         }
-        if (OnProgress != null)
-        {
-            OnProgress(1f);
-        }
-        GameObject prefabs;
-        if (result.isCorrect)
-        {
-            prefabs = recipe.CompletedDish;
-        }
-        else
-        {
-            prefabs = recipe.IncompletedDish;
-        }
-        if (prefabs != null && dishPoint != null)
-        {
-            spawnedDish = Instantiate(prefabs, dishPoint.position, Quaternion.identity);
-
-        }
-        else
-        {
-            Debug.Log("can not find prefabs");
-        }
-        
         addedAmount.Clear();
-        isCooking = false;
-        if (OnDishCooked != null)
-        {
-            OnDishCooked(recipe, result);
-        }
-    } 
+        return true;
+    } //assign the dish which is just maked to the oven
 
-        
+    public bool StartCookingBatch()
+    {
+        if (currentBatch == null || oven == null)
+        {
+            return false;
+        }
+        if (oven.StartBatch(currentBatch) == false){
+            return false;
+        }
+        currentBatch = null;
+        return true;
+    }
 }

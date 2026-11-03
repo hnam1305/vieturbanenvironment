@@ -122607,7 +122607,7 @@ MonoBehaviour:
   fullVisual: {fileID: 91347360}
   emptyVisual: {fileID: 338623433}
   ingredient: {fileID: 11400000, guid: 5610730d5b8a9444cb4faf5c824843c3, type: 2}
-  cookingSession: {fileID: 940295245}
+  cookingSession: {fileID: 940295249}
 --- !u!1001 &377669570
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -293308,7 +293308,7 @@ MonoBehaviour:
   fullVisual: {fileID: 183584307}
   emptyVisual: {fileID: 325256259}
   ingredient: {fileID: 11400000, guid: e03c9bfe115f8da4d9a81d21af8a6788, type: 2}
-  cookingSession: {fileID: 940295245}
+  cookingSession: {fileID: 940295249}
 --- !u!4 &893632780 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: 794fa6ae1e0a8794ba4d0a8e0214cfb5, type: 3}
@@ -307198,20 +307198,6 @@ GameObject:
   m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: 154645c08f28cbe45b41d700407848f5, type: 3}
   m_PrefabInstance: {fileID: 1666457633}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &940295245
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 940295244}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: ee579b97ef84d1846865307225c64e81, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::CookingSession
-  currentRecipe: {fileID: 11400000, guid: 756736bb23d6f6d4b8eea2bf156f86d6, type: 2}
-  dishPoint: {fileID: 1502518291}
 --- !u!4 &940295248 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: 154645c08f28cbe45b41d700407848f5, type: 3}
@@ -307226,10 +307212,10 @@ MonoBehaviour:
   m_GameObject: {fileID: 940295244}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 0b5dda06773c7b54eab1e1ab52dee139, type: 3}
+  m_Script: {fileID: 11500000, guid: ee579b97ef84d1846865307225c64e81, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::CookingDebug
-  session: {fileID: 940295245}
+  m_EditorClassIdentifier: Assembly-CSharp::CookingSession
+  oven: {fileID: 1111936720}
 --- !u!1001 &940810203
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -362505,6 +362491,23 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 4533943726500818, guid: 2224b63330275e5478ef024b2913f937, type: 3}
   m_PrefabInstance: {fileID: 1111465832}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &1111936719 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: 32b3890972bc6884b8411ff847d06ab3, type: 3}
+  m_PrefabInstance: {fileID: 1442129619}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &1111936720
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1111936719}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 538c59853c3fdf141a02fbc1edcf9552, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CookingOven
 --- !u!1001 &1112074597
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -460320,7 +460323,10 @@ PrefabInstance:
     - {fileID: 8367908967114958848, guid: 32b3890972bc6884b8411ff847d06ab3, type: 3}
     - {fileID: -6966123939507097558, guid: 32b3890972bc6884b8411ff847d06ab3, type: 3}
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 32b3890972bc6884b8411ff847d06ab3, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1111936720}
   m_SourcePrefab: {fileID: 100100000, guid: 32b3890972bc6884b8411ff847d06ab3, type: 3}
 --- !u!1 &1442221947
 GameObject:
@@ -485509,9 +485515,12 @@ GameObject:
   - component: {fileID: 1525265416}
   - component: {fileID: 1525265415}
   - component: {fileID: 1525265417}
-  - component: {fileID: 1525265419}
   - component: {fileID: 1525265418}
   - component: {fileID: 1525265420}
+  - component: {fileID: 1525265421}
+  - component: {fileID: 1525265422}
+  - component: {fileID: 1525265424}
+  - component: {fileID: 1525265423}
   m_Layer: 0
   m_Name: GameObject
   m_TagString: Untagged
@@ -485573,19 +485582,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CookingOvenDebug
   recipeData: {fileID: 11400000, guid: 756736bb23d6f6d4b8eea2bf156f86d6, type: 2}
-  oven: {fileID: 1525265419}
---- !u!114 &1525265419
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1525265414}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 538c59853c3fdf141a02fbc1edcf9552, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::CookingOven
+  oven: {fileID: 1111936720}
 --- !u!114 &1525265420
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -485599,6 +485596,63 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ShippingBoxDebug
   boxPrefab: {fileID: 6311823726530053211, guid: beb4bbb94e1e49a49927718e403178cf, type: 3}
+  recipeData: {fileID: 11400000, guid: 756736bb23d6f6d4b8eea2bf156f86d6, type: 2}
+  shelf: {fileID: 0}
+--- !u!114 &1525265421
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1525265414}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ff6544779d155e9448e9101eef07d772, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ShippingShelfDebug
+  shelf: {fileID: 2134043501}
+  recipeData: {fileID: 11400000, guid: 756736bb23d6f6d4b8eea2bf156f86d6, type: 2}
+--- !u!114 &1525265422
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1525265414}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5e4cede8779296a409288eb82fabfe33, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CookingSessionDebug
+  session: {fileID: 940295249}
+  recipeData: {fileID: 11400000, guid: 756736bb23d6f6d4b8eea2bf156f86d6, type: 2}
+--- !u!114 &1525265423
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1525265414}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9213e991e6182f44284a77bd2a491e75, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::OrderManager
+  cookingSession: {fileID: 940295249}
+  shippingShelf: {fileID: 2134043501}
+--- !u!114 &1525265424
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1525265414}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f0e1615390d14e8448fa13fa583b6586, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::OrderManagerDebug
+  orderManager: {fileID: 1525265423}
   recipeData: {fileID: 11400000, guid: 756736bb23d6f6d4b8eea2bf156f86d6, type: 2}
 --- !u!1001 &1525337176
 PrefabInstance:
@@ -527617,9 +527671,6 @@ PrefabInstance:
       insertIndex: -1
       addedObject: {fileID: 1502518291}
     m_AddedComponents:
-    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 154645c08f28cbe45b41d700407848f5, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 940295245}
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 154645c08f28cbe45b41d700407848f5, type: 3}
       insertIndex: -1
       addedObject: {fileID: 940295249}
@@ -673029,6 +673080,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 2134043500}
+  - component: {fileID: 2134043501}
   m_Layer: 0
   m_Name: GameObject (1)
   m_TagString: Untagged
@@ -673057,6 +673109,26 @@ Transform:
   - {fileID: 1091572625}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &2134043501
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2134043499}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c7d2f94dd9c5271429aa9638dfbec056, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ShippingShelf
+  slots:
+  - {fileID: 195228483}
+  - {fileID: 727307174}
+  - {fileID: 1788133877}
+  - {fileID: 43326335}
+  - {fileID: 1671982707}
+  - {fileID: 1091572625}
+  prefab: {fileID: 6311823726530053211, guid: beb4bbb94e1e49a49927718e403178cf, type: 3}
 --- !u!1001 &2134280348
 PrefabInstance:
   m_ObjectHideFlags: 0

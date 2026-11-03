@@ -2,13 +2,14 @@ using System.Collections.Generic;
 using UnityEngine;
 
 public class ShippingBoxDebug : MonoBehaviour
- {
+{
     [SerializeField] private ShippingBox boxPrefab;
     [SerializeField] private RecipeData recipeData;
+    [SerializeField] private ShippingShelf shelf;
 
     void Start()
     {
-        
+
     }
 
     // Update is called once per frame
@@ -29,11 +30,11 @@ public class ShippingBoxDebug : MonoBehaviour
             ShippingBox box1 = Instantiate(boxPrefab);
             ShippingBox box2 = Instantiate(boxPrefab);
 
-            Log("box 1 SetUp(order)", box1.SetUp(order), box1);
-            Log("box 1 SetUp(order)2", box1.SetUp(order), box1);
-            Log("box 2 SetUp(order)null", box2.SetUp(null), box2);
-            Log("box 2 SetUp(order)2", box2.SetUp(order2), box2);
-            Log("box 2 SetUp(order)", box2.SetUp(order), box2);
+            Log("box 1 SetUp(order)", box1.SetUp(order, shelf, 0), box1);
+            Log("box 1 SetUp(order)2", box1.SetUp(order, shelf, 0), box1);
+            Log("box 2 SetUp(order)null", box2.SetUp(null, shelf, 1), box2);
+            Log("box 2 SetUp(order)2", box2.SetUp(order2, shelf, 1), box2);
+            Log("box 2 SetUp(order)", box2.SetUp(order, shelf, 1), box2);
 
 
         }
@@ -48,6 +49,6 @@ public class ShippingBoxDebug : MonoBehaviour
         {
             Debug.Log(label + " - " + result + " | Box name: " + box.ItemName + " | id: " + box.Order.OrderId + " | dish count: " + box.DishCount);
         }
-        
+
     }
 }

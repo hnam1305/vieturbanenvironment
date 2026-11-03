@@ -2,6 +2,8 @@ using UnityEngine;
 
 public class ShippingBox : InteractableObject
 {
+    private ShippingShelf shelf;
+    private int slotIndex;
     private Order order;
     public Order Order
     {
@@ -32,13 +34,17 @@ public class ShippingBox : InteractableObject
             return order.ProducedCount;
         }
     }
-    public bool SetUp(Order newOrder)
+    public bool SetUp(Order newOrder, ShippingShelf newShelf, int newSlotIndex)
     {
         if (newOrder == null)
         {
             return false;
         }
         if (order != null)
+        {
+            return false;
+        }
+        if (shelf == null)
         {
             return false;
         }
@@ -51,7 +57,8 @@ public class ShippingBox : InteractableObject
             return false;
         }
         order = newOrder;
-        
+        shelf = newShelf;
+        slotIndex = newSlotIndex;
         ItemName = "Order #" + newOrder.OrderId + ": " + newOrder.Recipe.RecipeName;
         return true;
     }
@@ -62,7 +69,7 @@ public class ShippingBox : InteractableObject
             Debug.Log("box has no order");
             return;
         }
-
-        Debug.Log("Order ID: " +  order.OrderId + ": " + order.Recipe.RecipeName + " | quantity: " + order.ProducedCount);
+        shelf.ReleaseSlot(slotIndex);
+        Debug.Log("picked up Order: " + order.OrderId);
     }
 }
