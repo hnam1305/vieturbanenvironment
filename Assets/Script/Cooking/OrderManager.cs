@@ -64,7 +64,7 @@ public class OrderManager : MonoBehaviour
         Debug.Log("selected order: " + order.OrderId);
         return true;
     }
-    //acp order then connect order mng with cooking sesion
+    //Accepting an order does not start cooking.
     public bool AcceptOrder(int orderId)
     {
         Order order = GetOrderById(orderId);
@@ -78,21 +78,34 @@ public class OrderManager : MonoBehaviour
             Debug.Log("not available order");
             return false;
         }
-        if (cookingSession == null)
+        if (!order.Accept())
         {
-            Debug.Log("cooking session not exist");
             return false;
         }
-        order.StartMaking();
-        bool success = cookingSession.BeginOrder(order);
+        Debug.Log("order accept: "  + order.OrderId);
+        return true;
+    }
 
-        if (success == false)
+    //Start preparing an already accepted order on the plate.
+    public bool StartMakingOrder(int orderId)
+    {
+        Order order = GetOrderById(orderId);
+        if (order == null || cookingSession == null || order.OrderStatus != OrderState.Accepted)
         {
+            return false;
+        }
+        if (!order.StartMaking())
+        {
+            return false;
+        }
+        if (!cookingSession.BeginOrder(order))
+        {
+            order.ReturnToAccepted();
             Debug.Log("fail to begin session");
             return false;
         }
         selectedOrder = order;
-        Debug.Log("order accept: "  + order.OrderId);
+        Debug.Log("started making order: " + order.OrderId);
         return true;
     }
     //confirm and redo dish in case lam thieu

@@ -6,7 +6,7 @@ public class Order
 {
     public enum OrderState
     {
-        Available, Making, Cooking, WaitingConfirm, Closed
+        Available, Accepted, Making, Cooking, WaitingConfirm, Closed
     }
     [SerializeField] private RecipeData recipe;
     [SerializeField] private int requiredCount; //so cai khach dat
@@ -109,15 +109,35 @@ public class Order
         this.unitPrice = Math.Max(0, unitPrice);
     }
 
-    public bool StartMaking()
+    public bool Accept()
     {
         if (orderStatus != OrderState.Available)
         {
             return false;
         }
-        orderStatus = OrderState.Making;
+        orderStatus = OrderState.Accepted;
         return true;
 
+    }
+
+    public bool StartMaking()
+    {
+        if (orderStatus != OrderState.Accepted)
+        {
+            return false;
+        }
+        orderStatus = OrderState.Making;
+        return true;
+    }
+
+    public bool ReturnToAccepted()
+    {
+        if (orderStatus != OrderState.Making)
+        {
+            return false;
+        }
+        orderStatus = OrderState.Accepted;
+        return true;
     }
 
     public bool MarkCooking()
