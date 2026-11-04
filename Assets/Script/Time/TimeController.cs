@@ -40,6 +40,14 @@ public class TimeController : MonoBehaviour
     private TimeSpan sunriseTime;
     private TimeSpan sunsetTime;
 
+    public DateTime CurrentTime
+    {
+        get
+        {
+            return currentTime;
+        }
+    }
+
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {

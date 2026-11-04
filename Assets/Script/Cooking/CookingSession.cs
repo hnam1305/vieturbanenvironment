@@ -108,7 +108,9 @@ public class CookingSession : MonoBehaviour
         {
             return false;
         }
-        if (addedAmount.Count > 0 || currentBatch != null && currentBatch.StagedCount > 0)
+        // Keep one order on the plate at a time. Once its batch is sent to
+        // the oven, currentBatch becomes null and another order can begin.
+        if (addedAmount.Count > 0 || currentBatch != null)
         {
             return false;
         }

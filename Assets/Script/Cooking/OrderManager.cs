@@ -137,7 +137,6 @@ public class OrderManager : MonoBehaviour
             Debug.Log("full");
             return false;
         }
-        selectedOrder.StartMakeUp();
         if (selectedOrder.StartMakeUp() == false)
         {
             return false;
