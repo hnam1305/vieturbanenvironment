@@ -2,19 +2,11 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
-[Serializable]
-public class OrderCustomerProfile
-{
-    public Transform customerNpc;
-    public string customerName;
-    public string deliveryAddress;
-}
-
 public class OrderSpawner : MonoBehaviour
 {
     [SerializeField] private OrderManager orderManager;
     [SerializeField] private TimeController timeController;
-    [SerializeField] private List<OrderCustomerProfile> customers = new List<OrderCustomerProfile>();
+    [SerializeField] private NpcPopulationSpawner populationSpawner;
     [SerializeField] private List<RecipeData> recipes = new List<RecipeData>();
     [SerializeField] private int firstOrderId = 1;
     [SerializeField] private int minRequiredCount = 1;
@@ -36,7 +28,7 @@ public class OrderSpawner : MonoBehaviour
 
     private void Update()
     {
-        if (orderManager == null || timeController == null)
+        if (orderManager == null || timeController == null || populationSpawner == null)
         {
             return;
         }
@@ -52,7 +44,6 @@ public class OrderSpawner : MonoBehaviour
             nextSpawnTime = now.AddMinutes(Mathf.Max(0f, firstOrderDelayGameMinutes));
             scheduleInitialized = true;
         }
-
         if (now < nextSpawnTime)
         {
             return;
@@ -66,15 +57,7 @@ public class OrderSpawner : MonoBehaviour
 
     private bool TrySpawnOrder(DateTime placedAt)
     {
-        List<OrderCustomerProfile> validCustomers = new List<OrderCustomerProfile>();
-        foreach (OrderCustomerProfile customer in customers)
-        {
-            if (customer != null && customer.customerNpc != null)
-            {
-                validCustomers.Add(customer);
-            }
-        }
-
+        NpcController customer = populationSpawner.GetRandomResident();
         List<RecipeData> validRecipes = new List<RecipeData>();
         foreach (RecipeData recipe in recipes)
         {
@@ -84,30 +67,26 @@ public class OrderSpawner : MonoBehaviour
             }
         }
 
-        if (validCustomers.Count == 0 || validRecipes.Count == 0)
+        if (customer == null || customer.DeliveryPoint == null || validRecipes.Count == 0)
         {
-            Debug.LogWarning("OrderSpawner needs at least one customer NPC and one recipe.", this);
+            Debug.Log("order spawner needs a spawned customer and at least one recipe", this);
             return false;
         }
 
-        OrderCustomerProfile selectedCustomer = validCustomers[UnityEngine.Random.Range(0, validCustomers.Count)];
         RecipeData selectedRecipe = validRecipes[UnityEngine.Random.Range(0, validRecipes.Count)];
         int minCount = Mathf.Max(1, Mathf.Min(minRequiredCount, maxRequiredCount));
         int maxCount = Mathf.Max(minCount, Mathf.Max(minRequiredCount, maxRequiredCount));
         int requiredCount = UnityEngine.Random.Range(minCount, maxCount + 1);
         DateTime expectedDeliveryAt = placedAt.AddMinutes(Mathf.Max(0f, expectedDeliveryGameMinutes));
+        Order order = new Order(selectedRecipe, requiredCount, nextOrderId++, Mathf.Max(0, unitPrice),
+            customer.DeliveryPoint, customer.ResidentName, customer.DeliveryAddress, placedAt, expectedDeliveryAt);
 
-        Order order = new Order(
-            selectedRecipe,
-            requiredCount,
-            nextOrderId++,
-            Mathf.Max(0, unitPrice),
-            selectedCustomer.customerNpc,
-            selectedCustomer.customerName,
-            selectedCustomer.deliveryAddress,
-            placedAt,
-            expectedDeliveryAt);
-
+        customer.SetHasPendingDelivery(true);
+        if (customer.IsDormant)
+        {
+            customer.SetDormant(false, false);
+            customer.SetDormant(true, true);
+        }
         orderManager.AddOrder(order);
         return true;
     }

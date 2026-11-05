@@ -32,7 +32,7 @@ public class OrderManager : MonoBehaviour
         {
             if (existingOrder.OrderId == order.OrderId)
             {
-                Debug.Log("Order ID already exists!");
+                Debug.Log("order id already exists");
                 return;
             }
         }
@@ -113,7 +113,7 @@ public class OrderManager : MonoBehaviour
     {
         if (selectedOrder == null)
         {
-            Debug.LogWarning("pls select an order");
+            Debug.Log("pls select an order");
             return false;
         }
         if (selectedOrder.OrderStatus != OrderState.WaitingConfirm)
