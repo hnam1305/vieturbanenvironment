@@ -26,18 +26,24 @@ public class NpcController : MonoBehaviour
     private Transform[] parkSpots;
     private Transform homeEntrance;
     private Transform currentDestination;
+    private Vector3 currentDestinationPosition;
     private DestinationType currentDestinationType;
     private string residentName;
     private string deliveryAddress;
     private bool isWaiting;
+    private bool hasCurrentDestination;
     private bool isDormant;
     private bool isInHouse;
     private bool hasPendingDelivery;
+    private float activityVisitChance;
+    private float minTimeRoaming;
+    private float maxTimeRoaming;
 
     private enum DestinationType
     {
         Home,
-        Activity
+        Activity,
+        Roaming
     }
 
     public string ResidentName { get { return residentName; } }
@@ -54,7 +60,8 @@ public class NpcController : MonoBehaviour
     }
 
     public void Configure(NpcBehaviorType type, string name, string address, Transform residentHome,
-        Transform[] houses, Transform[] shops, Transform[] parks)
+        Transform[] houses, Transform[] shops, Transform[] parks, float visitChance,
+        float roamingWaitMin, float roamingWaitMax)
     {
         behaviorType = type;
         residentName = name;
@@ -63,6 +70,9 @@ public class NpcController : MonoBehaviour
         houseEntrances = houses;
         shopSpots = shops;
         parkSpots = parks;
+        activityVisitChance = Mathf.Clamp01(visitChance);
+        minTimeRoaming = Mathf.Max(0f, roamingWaitMin);
+        maxTimeRoaming = Mathf.Max(minTimeRoaming, roamingWaitMax);
     }
 
     private void Start()
@@ -95,7 +105,7 @@ public class NpcController : MonoBehaviour
             return;
         }
 
-        SetNextActivityDestination(null);
+        SetNextTravelDestination();
     }
 
     private void Update()
@@ -105,7 +115,7 @@ public class NpcController : MonoBehaviour
             return;
         }
 
-        if (isWaiting || currentDestination == null || agent.pathPending || !agent.hasPath)
+        if (isWaiting || !hasCurrentDestination || agent.pathPending || !agent.hasPath)
         {
             UpdateWalkingAnimation();
             return;
@@ -117,6 +127,10 @@ public class NpcController : MonoBehaviour
             if (currentDestinationType == DestinationType.Home)
             {
                 StartCoroutine(EnterHouseAndLeaveLater());
+            }
+            else if (currentDestinationType == DestinationType.Roaming)
+            {
+                StartCoroutine(WaitWhileRoaming());
             }
             else
             {
@@ -141,6 +155,7 @@ public class NpcController : MonoBehaviour
             {
                 StopAgent();
                 currentDestination = null;
+                hasCurrentDestination = false;
                 agent.Warp(homeEntrance.position);
                 transform.rotation = homeEntrance.rotation;
                 isInHouse = false;
@@ -156,9 +171,9 @@ public class NpcController : MonoBehaviour
             agent.isStopped = false;
             SetVisible(!isInHouse);
             isDormant = false;
-            if (!isInHouse && currentDestination != null)
+            if (!isInHouse && hasCurrentDestination)
             {
-                agent.SetDestination(currentDestination.position);
+                agent.SetDestination(currentDestinationPosition);
             }
         }
     }
@@ -173,8 +188,10 @@ public class NpcController : MonoBehaviour
 
         StopAllCoroutines();
         isWaiting = false;
+        hasCurrentDestination = false;
         currentDestination = null;
         isInHouse = false;
+        StopAgent();
         agent.Warp(homeEntrance.position);
         agent.isStopped = isDormant;
         transform.rotation = homeEntrance.rotation;
@@ -189,14 +206,42 @@ public class NpcController : MonoBehaviour
         yield return new WaitForSeconds(GetRandomWait(minTimeAtActivity, maxTimeAtActivity));
         isWaiting = false;
 
-        if (behaviorType == NpcBehaviorType.Shopper || Random.value < wandererHomeVisitChance)
+        if (ShouldVisitHomeAfterActivity())
         {
             SetHomeDestination(null);
         }
         else
         {
-            SetNextActivityDestination(null);
+            SetNextTravelDestination();
         }
+    }
+
+    private IEnumerator WaitWhileRoaming()
+    {
+        isWaiting = true;
+        hasCurrentDestination = false;
+        currentDestination = null;
+        StopAgent();
+        yield return new WaitForSeconds(GetRandomWait(minTimeRoaming, maxTimeRoaming));
+        isWaiting = false;
+
+        if (behaviorType == NpcBehaviorType.Wanderer && Random.value < wandererHomeVisitChance)
+        {
+            SetHomeDestination(null);
+        }
+        else
+        {
+            SetNextTravelDestination();
+        }
+    }
+
+    private bool ShouldVisitHomeAfterActivity()
+    {
+        if (behaviorType == NpcBehaviorType.Shopper)
+        {
+            return Random.value < 0.25f;
+        }
+        return Random.value < wandererHomeVisitChance;
     }
 
     private IEnumerator EnterHouseAndLeaveLater()
@@ -205,6 +250,7 @@ public class NpcController : MonoBehaviour
         isInHouse = true;
         Transform enteredEntrance = currentDestination;
         currentDestination = null;
+        hasCurrentDestination = false;
         StopAgent();
         SetVisible(false);
         yield return new WaitForSeconds(GetRandomWait(minTimeInside, maxTimeInside));
@@ -217,7 +263,7 @@ public class NpcController : MonoBehaviour
             isInHouse = false;
             agent.isStopped = isDormant;
             isWaiting = false;
-            SetNextActivityDestination(null);
+            SetNextTravelDestination();
             yield break;
         }
 
@@ -226,17 +272,50 @@ public class NpcController : MonoBehaviour
         SetVisible(!isDormant);
         agent.isStopped = isDormant;
         isWaiting = false;
-        SetNextActivityDestination(null);
+        SetNextTravelDestination();
     }
 
-    private void SetNextActivityDestination(Transform exclude)
+    private void SetNextTravelDestination()
+    {
+        if (Random.value < activityVisitChance)
+        {
+            SetActivityDestination();
+            if (hasCurrentDestination)
+            {
+                return;
+            }
+        }
+        SetRandomRoamingDestination();
+    }
+
+    private void SetActivityDestination()
     {
         Transform[] activities = parkSpots;
         if (behaviorType == NpcBehaviorType.Shopper)
         {
             activities = shopSpots;
         }
-        SetDestination(GetRandomTransform(activities, exclude), DestinationType.Activity);
+        SetDestination(GetRandomTransform(activities, null), DestinationType.Activity);
+    }
+
+    private void SetRandomRoamingDestination()
+    {
+        for (int attempt = 0; attempt < 30; attempt++)
+        {
+            if (!NpcNavMeshUtility.TryGetRandomPosition(out Vector3 randomPosition))
+            {
+                break;
+            }
+
+            NavMeshPath path = new NavMeshPath();
+            if (agent.CalculatePath(randomPosition, path) && path.status == NavMeshPathStatus.PathComplete)
+            {
+                SetDestination(randomPosition, DestinationType.Roaming);
+                return;
+            }
+        }
+
+        Debug.Log("npc could not find a reachable roaming destination", this);
     }
 
     private void SetHomeDestination(Transform exclude)
@@ -250,9 +329,27 @@ public class NpcController : MonoBehaviour
         {
             Debug.Log("npc could not set a destination on the nav mesh", this);
             currentDestination = null;
+            hasCurrentDestination = false;
             return;
         }
         currentDestination = destination;
+        currentDestinationPosition = destination.position;
+        hasCurrentDestination = true;
+        currentDestinationType = type;
+    }
+
+    private void SetDestination(Vector3 destination, DestinationType type)
+    {
+        if (!agent.SetDestination(destination))
+        {
+            Debug.Log("npc could not set a roaming destination", this);
+            currentDestination = null;
+            hasCurrentDestination = false;
+            return;
+        }
+        currentDestination = null;
+        currentDestinationPosition = destination;
+        hasCurrentDestination = true;
         currentDestinationType = type;
     }
 

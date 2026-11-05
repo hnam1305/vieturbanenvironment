@@ -17,16 +17,22 @@ public class NpcPopulationSpawner : MonoBehaviour
     [SerializeField] private NpcController npcPrefab;
     [SerializeField] private Transform player;
     [SerializeField, Min(1)] private int populationSize = 8;
+    [SerializeField] private bool spawnAcrossWholeNavMesh = true;
     [SerializeField, Min(0f)] private float spawnRadius = 40f;
     [SerializeField, Min(0.1f)] private float sampleRadius = 4f;
+    [SerializeField, Min(0f)] private float minimumSpawnSeparation = 5f;
     [SerializeField, Min(1f)] private float hideDistance = 80f;
     [SerializeField, Min(1f)] private float showDistance = 60f;
+    [SerializeField, Range(0f, 1f)] private float activityVisitChance = 0.2f;
+    [SerializeField, Min(0f)] private float minTimeRoaming = 2f;
+    [SerializeField, Min(0f)] private float maxTimeRoaming = 8f;
     [SerializeField] private Transform[] houseEntrances;
     [SerializeField] private Transform[] shopSpots;
     [SerializeField] private Transform[] parkSpots;
     [SerializeField] private List<NpcResidentData> residents = new List<NpcResidentData>();
 
     private readonly List<NpcController> activeResidents = new List<NpcController>();
+    private readonly List<Vector3> spawnPositions = new List<Vector3>();
 
     public IReadOnlyList<NpcController> ActiveResidents { get { return activeResidents; } }
 
@@ -117,31 +123,63 @@ public class NpcPopulationSpawner : MonoBehaviour
 
             NpcController resident = Instantiate(npcPrefab, spawnPosition, Quaternion.identity, transform);
             resident.Configure(residentData.behaviorType, residentData.residentName, residentData.deliveryAddress,
-                residentData.homeEntrance, houseEntrances, shopSpots, parkSpots);
+                residentData.homeEntrance, houseEntrances, shopSpots, parkSpots, activityVisitChance,
+                minTimeRoaming, maxTimeRoaming);
             activeResidents.Add(resident);
+            spawnPositions.Add(spawnPosition);
         }
     }
 
     private bool TryGetSpawnPosition(out Vector3 spawnPosition)
     {
-        Vector3 center = transform.position;
-        if (player != null)
+        for (int attempt = 0; attempt < 100; attempt++)
         {
-            center = player.position;
-        }
-
-        for (int attempt = 0; attempt < 20; attempt++)
-        {
-            Vector2 offset = UnityEngine.Random.insideUnitCircle * spawnRadius;
-            Vector3 candidate = center + new Vector3(offset.x, 0f, offset.y);
-            if (NavMesh.SamplePosition(candidate, out NavMeshHit hit, sampleRadius, NavMesh.AllAreas))
+            Vector3 candidate;
+            bool foundPosition = false;
+            if (spawnAcrossWholeNavMesh)
             {
-                spawnPosition = hit.position;
+                foundPosition = NpcNavMeshUtility.TryGetRandomPosition(out candidate);
+            }
+            else
+            {
+                Vector3 center = transform.position;
+                if (player != null)
+                {
+                    center = player.position;
+                }
+                Vector2 offset = UnityEngine.Random.insideUnitCircle * spawnRadius;
+                Vector3 nearbyCandidate = center + new Vector3(offset.x, 0f, offset.y);
+                if (NavMesh.SamplePosition(nearbyCandidate, out NavMeshHit hit, sampleRadius, NavMesh.AllAreas))
+                {
+                    candidate = hit.position;
+                    foundPosition = true;
+                }
+                else
+                {
+                    candidate = Vector3.zero;
+                }
+            }
+
+            if (foundPosition && IsFarEnoughFromOtherSpawnPoints(candidate))
+            {
+                spawnPosition = candidate;
                 return true;
             }
         }
 
         spawnPosition = Vector3.zero;
         return false;
+    }
+
+    private bool IsFarEnoughFromOtherSpawnPoints(Vector3 candidate)
+    {
+        foreach (Vector3 existingPosition in spawnPositions)
+        {
+            if (Vector3.Distance(candidate, existingPosition) < minimumSpawnSeparation)
+            {
+                return false;
+            }
+        }
+        return true;
     }
 }
