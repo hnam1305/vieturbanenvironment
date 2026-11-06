@@ -82,11 +82,6 @@ public class OrderSpawner : MonoBehaviour
             customer.DeliveryPoint, customer.ResidentName, customer.DeliveryAddress, placedAt, expectedDeliveryAt);
 
         customer.SetHasPendingDelivery(true);
-        if (customer.IsDormant)
-        {
-            customer.SetDormant(false, false);
-            customer.SetDormant(true, true);
-        }
         orderManager.AddOrder(order);
         return true;
     }

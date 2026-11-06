@@ -32,10 +32,10 @@ public class NpcController : MonoBehaviour
     private string deliveryAddress;
     private bool isWaiting;
     private bool hasCurrentDestination;
-    private bool isDormant;
     private bool isInHouse;
     private bool hasPendingDelivery;
     private float activityVisitChance;
+    private float roamingRadius;
     private float minTimeRoaming;
     private float maxTimeRoaming;
 
@@ -49,7 +49,6 @@ public class NpcController : MonoBehaviour
     public string ResidentName { get { return residentName; } }
     public string DeliveryAddress { get { return deliveryAddress; } }
     public Transform DeliveryPoint { get { return homeEntrance; } }
-    public bool IsDormant { get { return isDormant; } }
     public bool HasPendingDelivery { get { return hasPendingDelivery; } }
 
     private void Awake()
@@ -61,7 +60,7 @@ public class NpcController : MonoBehaviour
 
     public void Configure(NpcBehaviorType type, string name, string address, Transform residentHome,
         Transform[] houses, Transform[] shops, Transform[] parks, float visitChance,
-        float roamingWaitMin, float roamingWaitMax)
+        float moveRadius, float roamingWaitMin, float roamingWaitMax)
     {
         behaviorType = type;
         residentName = name;
@@ -71,6 +70,7 @@ public class NpcController : MonoBehaviour
         shopSpots = shops;
         parkSpots = parks;
         activityVisitChance = Mathf.Clamp01(visitChance);
+        roamingRadius = Mathf.Max(1f, moveRadius);
         minTimeRoaming = Mathf.Max(0f, roamingWaitMin);
         maxTimeRoaming = Mathf.Max(minTimeRoaming, roamingWaitMax);
     }
@@ -110,7 +110,7 @@ public class NpcController : MonoBehaviour
 
     private void Update()
     {
-        if (isDormant || agent == null)
+        if (agent == null)
         {
             return;
         }
@@ -141,43 +141,6 @@ public class NpcController : MonoBehaviour
         UpdateWalkingAnimation();
     }
 
-    public void SetDormant(bool dormant, bool keepAtDeliveryPoint)
-    {
-        if (isDormant == dormant)
-        {
-            return;
-        }
-
-        if (dormant)
-        {
-            isDormant = true;
-            if (keepAtDeliveryPoint && homeEntrance != null && agent.isOnNavMesh)
-            {
-                StopAgent();
-                currentDestination = null;
-                hasCurrentDestination = false;
-                agent.Warp(homeEntrance.position);
-                transform.rotation = homeEntrance.rotation;
-                isInHouse = false;
-            }
-
-            agent.isStopped = true;
-            SetVisible(false);
-            return;
-        }
-
-        if (agent.isOnNavMesh)
-        {
-            agent.isStopped = false;
-            SetVisible(!isInHouse);
-            isDormant = false;
-            if (!isInHouse && hasCurrentDestination)
-            {
-                agent.SetDestination(currentDestinationPosition);
-            }
-        }
-    }
-
     public void SetHasPendingDelivery(bool pending)
     {
         hasPendingDelivery = pending;
@@ -193,9 +156,9 @@ public class NpcController : MonoBehaviour
         isInHouse = false;
         StopAgent();
         agent.Warp(homeEntrance.position);
-        agent.isStopped = isDormant;
+        agent.isStopped = false;
         transform.rotation = homeEntrance.rotation;
-        SetVisible(!isDormant);
+        SetVisible(true);
     }
 
     private IEnumerator WaitAtActivity()
@@ -259,9 +222,9 @@ public class NpcController : MonoBehaviour
         if (exitEntrance == null || !agent.Warp(exitEntrance.position))
         {
             Debug.Log("npc could not reach a house entrance", this);
-            SetVisible(!isDormant);
+            SetVisible(true);
             isInHouse = false;
-            agent.isStopped = isDormant;
+            agent.isStopped = false;
             isWaiting = false;
             SetNextTravelDestination();
             yield break;
@@ -269,8 +232,8 @@ public class NpcController : MonoBehaviour
 
         transform.rotation = exitEntrance.rotation;
         isInHouse = false;
-        SetVisible(!isDormant);
-        agent.isStopped = isDormant;
+        SetVisible(true);
+        agent.isStopped = false;
         isWaiting = false;
         SetNextTravelDestination();
     }
@@ -300,22 +263,13 @@ public class NpcController : MonoBehaviour
 
     private void SetRandomRoamingDestination()
     {
-        for (int attempt = 0; attempt < 30; attempt++)
+        if (NpcNavMeshUtility.TryGetReachablePosition(agent, roamingRadius, out Vector3 randomPosition))
         {
-            if (!NpcNavMeshUtility.TryGetRandomPosition(out Vector3 randomPosition))
-            {
-                break;
-            }
-
-            NavMeshPath path = new NavMeshPath();
-            if (agent.CalculatePath(randomPosition, path) && path.status == NavMeshPathStatus.PathComplete)
-            {
-                SetDestination(randomPosition, DestinationType.Roaming);
-                return;
-            }
+            SetDestination(randomPosition, DestinationType.Roaming);
+            return;
         }
 
-        Debug.Log("npc could not find a reachable roaming destination", this);
+        Debug.Log("npc could not find a nearby reachable roaming destination", this);
     }
 
     private void SetHomeDestination(Transform exclude)

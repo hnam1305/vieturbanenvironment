@@ -21,9 +21,8 @@ public class NpcPopulationSpawner : MonoBehaviour
     [SerializeField, Min(0f)] private float spawnRadius = 40f;
     [SerializeField, Min(0.1f)] private float sampleRadius = 4f;
     [SerializeField, Min(0f)] private float minimumSpawnSeparation = 5f;
-    [SerializeField, Min(1f)] private float hideDistance = 80f;
-    [SerializeField, Min(1f)] private float showDistance = 60f;
     [SerializeField, Range(0f, 1f)] private float activityVisitChance = 0.2f;
+    [SerializeField, Min(1f)] private float roamingRadius = 35f;
     [SerializeField, Min(0f)] private float minTimeRoaming = 2f;
     [SerializeField, Min(0f)] private float maxTimeRoaming = 8f;
     [SerializeField] private Transform[] houseEntrances;
@@ -39,32 +38,6 @@ public class NpcPopulationSpawner : MonoBehaviour
     private void Start()
     {
         SpawnPopulation();
-    }
-
-    private void Update()
-    {
-        if (player == null)
-        {
-            return;
-        }
-
-        foreach (NpcController resident in activeResidents)
-        {
-            if (resident == null)
-            {
-                continue;
-            }
-
-            float distance = Vector3.Distance(player.position, resident.transform.position);
-            if (!resident.IsDormant && distance > hideDistance)
-            {
-                resident.SetDormant(true, resident.HasPendingDelivery);
-            }
-            else if (resident.IsDormant && distance < showDistance)
-            {
-                resident.SetDormant(false, false);
-            }
-        }
     }
 
     public NpcController GetRandomResident()
@@ -124,7 +97,7 @@ public class NpcPopulationSpawner : MonoBehaviour
             NpcController resident = Instantiate(npcPrefab, spawnPosition, Quaternion.identity, transform);
             resident.Configure(residentData.behaviorType, residentData.residentName, residentData.deliveryAddress,
                 residentData.homeEntrance, houseEntrances, shopSpots, parkSpots, activityVisitChance,
-                minTimeRoaming, maxTimeRoaming);
+                roamingRadius, minTimeRoaming, maxTimeRoaming);
             activeResidents.Add(resident);
             spawnPositions.Add(spawnPosition);
         }

@@ -58,6 +58,48 @@ public static class NpcNavMeshUtility
         return false;
     }
 
+    public static bool TryGetReachablePosition(NavMeshAgent agent, float roamingRadius, out Vector3 position)
+    {
+        if (agent == null || !agent.isOnNavMesh)
+        {
+            position = Vector3.zero;
+            return false;
+        }
+
+        float baseRadius = Mathf.Max(1f, roamingRadius);
+        for (int radiusStep = 0; radiusStep < 4; radiusStep++)
+        {
+            float currentRadius = baseRadius / Mathf.Pow(2f, radiusStep);
+            for (int attempt = 0; attempt < 15; attempt++)
+            {
+                Vector2 offset = Random.insideUnitCircle * currentRadius;
+                Vector3 candidate = agent.nextPosition + new Vector3(offset.x, 0f, offset.y);
+                float sampleDistance = Mathf.Max(2f, currentRadius * 0.2f);
+
+                if (!NavMesh.SamplePosition(candidate, out NavMeshHit hit, sampleDistance, agent.areaMask))
+                {
+                    continue;
+                }
+
+                float minimumDistance = Mathf.Min(4f, currentRadius * 0.5f);
+                if (Vector3.Distance(agent.nextPosition, hit.position) < minimumDistance)
+                {
+                    continue;
+                }
+
+                NavMeshPath path = new NavMeshPath();
+                if (agent.CalculatePath(hit.position, path) && path.status == NavMeshPathStatus.PathComplete)
+                {
+                    position = hit.position;
+                    return true;
+                }
+            }
+        }
+
+        position = Vector3.zero;
+        return false;
+    }
+
     private static void BuildTrianglesIfNeeded()
     {
         if (hasBuiltTriangles)
