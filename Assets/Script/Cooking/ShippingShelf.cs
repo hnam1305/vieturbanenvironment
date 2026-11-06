@@ -4,6 +4,7 @@ public class ShippingShelf : MonoBehaviour
 {
     [SerializeField] private Transform[] slots;
     [SerializeField] private ShippingBox prefab;
+    [SerializeField] private DeliveryInventory deliveryInventory;
     private ShippingBox[] boxes;
     private void Awake()
     {
@@ -67,7 +68,31 @@ public class ShippingShelf : MonoBehaviour
             return;
         }
         boxes[index] = null;
-        Debug.Log("Released shelf slot: " + index);
+        Debug.Log("released shelf slot: " + index);
+    }
+
+    public bool TryCollectBox(ShippingBox box)
+    {
+        if (box == null || deliveryInventory == null)
+        {
+            return false;
+        }
+
+        int index = box.SlotIndex;
+        if (index < 0 || index >= boxes.Length || boxes[index] != box)
+        {
+            return false;
+        }
+
+        if (!deliveryInventory.TryAddPackage(box.Order))
+        {
+            return false;
+        }
+
+        boxes[index] = null;
+        Destroy(box.gameObject);
+        Debug.Log("picked up order: " + box.OrderId);
+        return true;
     }
     void Start()
     {

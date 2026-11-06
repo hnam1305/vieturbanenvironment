@@ -6,7 +6,7 @@ public class Order
 {
     public enum OrderState
     {
-        Available, Accepted, Making, Cooking, WaitingConfirm, Closed
+        Available, Accepted, Making, Cooking, WaitingConfirm, Closed, Delivered
     }
     [SerializeField] private RecipeData recipe;
     [SerializeField] private int requiredCount; //so cai khach dat
@@ -19,6 +19,7 @@ public class Order
     private string customerName;
     private string deliveryAddress;
     private Transform customerNpc;
+    private NpcController customerResident;
     private DateTime placedAt;
     private DateTime expectedDeliveryAt;
 
@@ -62,6 +63,14 @@ public class Order
         get
         {
             return customerNpc;
+        }
+    }
+
+    public NpcController CustomerResident
+    {
+        get
+        {
+            return customerResident;
         }
     }
 
@@ -194,6 +203,15 @@ public class Order
         this.expectedDeliveryAt = expectedDeliveryAt;
     }
 
+    public Order(RecipeData recipe, int requiredCount, int orderId, int unitPrice, Transform customerNpc,
+        string customerName, string deliveryAddress, DateTime placedAt, DateTime expectedDeliveryAt,
+        NpcController customerResident)
+        : this(recipe, requiredCount, orderId, unitPrice, customerNpc, customerName, deliveryAddress,
+            placedAt, expectedDeliveryAt)
+    {
+        this.customerResident = customerResident;
+    }
+
     public bool Accept()
     {
         if (orderStatus != OrderState.Available)
@@ -222,6 +240,16 @@ public class Order
             return false;
         }
         orderStatus = OrderState.Accepted;
+        return true;
+    }
+
+    public bool ReturnToWaitingConfirm()
+    {
+        if (orderStatus != OrderState.Making)
+        {
+            return false;
+        }
+        orderStatus = OrderState.WaitingConfirm;
         return true;
     }
 
@@ -283,6 +311,16 @@ public class Order
             return false;
         }
         isCreated = true;
+        return true;
+    }
+
+    public bool MarkDelivered()
+    {
+        if (orderStatus != OrderState.Closed || !isCreated)
+        {
+            return false;
+        }
+        orderStatus = OrderState.Delivered;
         return true;
     }
 

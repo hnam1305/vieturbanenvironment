@@ -144,21 +144,35 @@ public class NpcController : MonoBehaviour
     public void SetHasPendingDelivery(bool pending)
     {
         hasPendingDelivery = pending;
-        if (!pending || homeEntrance == null || agent == null || !agent.isOnNavMesh)
+        if (agent == null || !agent.isOnNavMesh)
         {
             return;
         }
 
-        StopAllCoroutines();
-        isWaiting = false;
-        hasCurrentDestination = false;
-        currentDestination = null;
-        isInHouse = false;
-        StopAgent();
-        agent.Warp(homeEntrance.position);
-        agent.isStopped = false;
-        transform.rotation = homeEntrance.rotation;
-        SetVisible(true);
+        if (pending)
+        {
+            if (homeEntrance == null)
+            {
+                return;
+            }
+            StopAllCoroutines();
+            isWaiting = false;
+            hasCurrentDestination = false;
+            currentDestination = null;
+            isInHouse = false;
+            StopAgent();
+            agent.Warp(homeEntrance.position);
+            agent.isStopped = false;
+            transform.rotation = homeEntrance.rotation;
+            SetVisible(true);
+            return;
+        }
+
+        if (!isInHouse)
+        {
+            agent.isStopped = false;
+            SetNextTravelDestination();
+        }
     }
 
     private IEnumerator WaitAtActivity()

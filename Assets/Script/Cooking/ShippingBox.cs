@@ -23,6 +23,10 @@ public class ShippingBox : InteractableObject
             return order.OrderId;
         }
     }
+    public int SlotIndex
+    {
+        get { return slotIndex; }
+    }
     public int DishCount
     {
         get
@@ -69,7 +73,9 @@ public class ShippingBox : InteractableObject
             Debug.Log("box has no order");
             return;
         }
-        shelf.ReleaseSlot(slotIndex);
-        Debug.Log("picked up Order: " + order.OrderId);
+        if (shelf == null || !shelf.TryCollectBox(this))
+        {
+            Debug.Log("could not collect the shipping box", this);
+        }
     }
 }

@@ -36,6 +36,21 @@ public class PlayerWallet : MonoBehaviour
         }
         return true;
     }
+
+    public void AddMoney(int amount)
+    {
+        if (amount <= 0)
+        {
+            return;
+        }
+
+        playerData.money += amount;
+        if (MoneyChange != null)
+        {
+            MoneyChange(playerData.money);
+        }
+    }
+
     public void AddItem(string itemId, float amount)
     {
         playerData.AddItem(itemId, amount);

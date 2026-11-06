@@ -144,6 +144,7 @@ public class OrderManager : MonoBehaviour
         bool success = cookingSession.BeginOrder(selectedOrder);
         if (success == false)
         {
+            selectedOrder.ReturnToWaitingConfirm();
             Debug.Log("fail to begin");
             return false;
         }
@@ -157,24 +158,53 @@ public class OrderManager : MonoBehaviour
             Debug.Log("pls select an order");
             return false;
         }
-        if (shippingShelf == null)
+        return CreateShippingBox(selectedOrder.OrderId);
+    }
+
+    public bool CreateShippingBox(int orderId)
+    {
+        Order order = GetOrderById(orderId);
+        if (order == null || shippingShelf == null)
         {
-            Debug.Log("pls add shipping shelf");
+            Debug.Log("order or shipping shelf is missing");
             return false;
         }
-        if (selectedOrder.OrderStatus != OrderState.Closed)
+        if (order.OrderStatus != OrderState.Closed)
         {
             Debug.Log("you must confirm the order");
             return false;
         }
-        bool success = shippingShelf.TryCreateBox(selectedOrder);
+        bool success = shippingShelf.TryCreateBox(order);
         if (success == false)
         {
             Debug.Log("fail to create shipping box");
             return false;
         }
-        Debug.Log(" created for order: " + selectedOrder.OrderId);
+        Debug.Log("created shipping box for order: " + order.OrderId);
 
+        return true;
+    }
+
+    public bool CompleteDelivery(int orderId, PlayerWallet playerWallet)
+    {
+        Order order = GetOrderById(orderId);
+        if (order == null || playerWallet == null)
+        {
+            return false;
+        }
+        if (order.OrderStatus != OrderState.Closed || !order.IsCreated || order.CustomerResident == null)
+        {
+            return false;
+        }
+        if (!order.MarkDelivered())
+        {
+            return false;
+        }
+
+        playerWallet.AddMoney(order.Total);
+        SaveSystem.SaveGame(GameSession.Current);
+        order.CustomerResident.SetHasPendingDelivery(false);
+        Debug.Log("delivered order: " + order.OrderId);
         return true;
     }
     // Start is called once before the first execution of Update after the MonoBehaviour is created

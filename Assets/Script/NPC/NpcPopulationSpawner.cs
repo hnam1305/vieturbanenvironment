@@ -45,7 +45,7 @@ public class NpcPopulationSpawner : MonoBehaviour
         List<NpcController> availableResidents = new List<NpcController>();
         foreach (NpcController resident in activeResidents)
         {
-            if (resident != null && resident.isActiveAndEnabled)
+            if (resident != null && resident.isActiveAndEnabled && !resident.HasPendingDelivery)
             {
                 availableResidents.Add(resident);
             }

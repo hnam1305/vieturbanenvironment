@@ -79,7 +79,8 @@ public class OrderSpawner : MonoBehaviour
         int requiredCount = UnityEngine.Random.Range(minCount, maxCount + 1);
         DateTime expectedDeliveryAt = placedAt.AddMinutes(Mathf.Max(0f, expectedDeliveryGameMinutes));
         Order order = new Order(selectedRecipe, requiredCount, nextOrderId++, Mathf.Max(0, unitPrice),
-            customer.DeliveryPoint, customer.ResidentName, customer.DeliveryAddress, placedAt, expectedDeliveryAt);
+            customer.DeliveryPoint, customer.ResidentName, customer.DeliveryAddress, placedAt,
+            expectedDeliveryAt, customer);
 
         customer.SetHasPendingDelivery(true);
         orderManager.AddOrder(order);
