@@ -9,6 +9,7 @@ public class AvailableOrderScreenUI : MonoBehaviour
     [SerializeField, Min(0.1f)] private float refreshInterval = 0.5f;
 
     private readonly List<int> displayedOrderIds = new List<int>();
+    private readonly List<OrderCardView> cardPool = new List<OrderCardView>();
     private float refreshTimer;
 
     private void OnEnable()
@@ -49,15 +50,21 @@ public class AvailableOrderScreenUI : MonoBehaviour
             return;
         }
 
-        ClearGeneratedCards();
         displayedOrderIds.Clear();
 
-        foreach (Order order in availableOrders)
+        for (int index = 0; index < availableOrders.Count; index++)
         {
-            OrderCardView card = Instantiate(orderCardPrefab, orderCardContainer);
+            Order order = availableOrders[index];
+            OrderCardView card = GetOrCreateCard(index);
+            card.gameObject.SetActive(true);
             int orderId = order.OrderId;
             card.SetOrder(order, delegate { AcceptOrder(orderId); });
             displayedOrderIds.Add(orderId);
+        }
+
+        for (int index = availableOrders.Count; index < cardPool.Count; index++)
+        {
+            cardPool[index].gameObject.SetActive(false);
         }
     }
 
@@ -79,12 +86,16 @@ public class AvailableOrderScreenUI : MonoBehaviour
         return true;
     }
 
-    private void ClearGeneratedCards()
+    private OrderCardView GetOrCreateCard(int index)
     {
-        for (int index = orderCardContainer.childCount - 1; index >= 0; index--)
+        if (index < cardPool.Count)
         {
-            Destroy(orderCardContainer.GetChild(index).gameObject);
+            return cardPool[index];
         }
+
+        OrderCardView card = Instantiate(orderCardPrefab, orderCardContainer);
+        cardPool.Add(card);
+        return card;
     }
 
     private void AcceptOrder(int orderId)

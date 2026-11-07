@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 05f7b5882b382b04f88e02ebdedcaee6, type: 3}
   m_Name: Banh Mi
   m_EditorClassIdentifier: Assembly-CSharp::RecipeData
-  recipeName: Cong thuc banh my trung
+  recipeName: Banh Mi Trung
   dishItem: {fileID: 11400000, guid: 8e7442713477ec04ba9d9ecb957f7893, type: 2}
   ingredients:
   - ingredient: {fileID: 11400000, guid: 5610730d5b8a9444cb4faf5c824843c3, type: 2}
