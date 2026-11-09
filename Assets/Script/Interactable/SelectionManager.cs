@@ -1,5 +1,6 @@
 using UnityEngine;
 using TMPro;
+using UnityEngine.EventSystems;
 
 public class SelectionManager : MonoBehaviour
 {
@@ -7,6 +8,22 @@ public class SelectionManager : MonoBehaviour
     private TextMeshProUGUI interaction_text;
     [SerializeField] private float interactDistance = 3f;
     private InteractableObject currentInteractable = null;
+    private bool interactionEnabled = true;
+
+    public InteractableObject CurrentInteractable
+    {
+        get { return currentInteractable; }
+    }
+
+    public bool InteractionEnabled
+    {
+        get { return interactionEnabled; }
+    }
+
+    public void SetInteractionEnabled(bool enabled)
+    {
+        interactionEnabled = enabled;
+    }
 
     private void Start()
     {
@@ -26,9 +43,10 @@ public class SelectionManager : MonoBehaviour
             InteractableObject interactable = hit.collider.GetComponentInParent<InteractableObject>();
             if (interactable != null)
             {
-                interaction_text.text = interactable.GetItemName();
+                interaction_text.text = interactable.GetInteractionPrompt();
                 currentInteractable = interactable;
-                if (Input.GetMouseButtonDown(0))
+                bool pointerOverUi = EventSystem.current != null && EventSystem.current.IsPointerOverGameObject();
+                if (Input.GetMouseButtonDown(0) && interactionEnabled && !pointerOverUi)
                 {
                     currentInteractable.Interact();
                 }

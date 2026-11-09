@@ -12,6 +12,7 @@ public class InventoryUIController : MonoBehaviour
     [Header("data")]
     [SerializeField] private ItemDatabase itemDatabase;
     [SerializeField] private DeliveryInventory deliveryInventory;
+    [SerializeField] private SelectionManager selectionManager;
     [SerializeField, Min(1)] private int maxSlots = 64;
     [Header("tabs and grid")]
     [SerializeField] private Button foodTabButton;
@@ -45,8 +46,13 @@ public class InventoryUIController : MonoBehaviour
     private bool panelOpen;
     private CursorLockMode previousCursorLockMode;
     private bool previousCursorVisible;
+    private bool previousInteractionEnabled;
     private void Awake()
     {
+        if (deliveryTargetMarker == null)
+        {
+            deliveryTargetMarker = FindAnyObjectByType<DeliveryTargetMarker>(FindObjectsInactive.Include);
+        }
         if (inventoryPanelRoot != null)
         {
             inventoryPanelRoot.SetActive(false);
@@ -103,6 +109,7 @@ public class InventoryUIController : MonoBehaviour
             return;
         }
         refreshTimer = 0f;
+        UpdatePackageDetails();
         UpdateDeliveryButton();
     }
     private void OnDestroy()
@@ -172,6 +179,15 @@ public class InventoryUIController : MonoBehaviour
         {
             previousCursorLockMode = Cursor.lockState;
             previousCursorVisible = Cursor.visible;
+            if (selectionManager != null)
+            {
+                previousInteractionEnabled = selectionManager.InteractionEnabled;
+                if (currentPage == InventoryPage.Food)
+                {
+                    SetIngredientStation(selectionManager.CurrentInteractable as IngredientStation);
+                }
+                selectionManager.SetInteractionEnabled(false);
+            }
             Cursor.lockState = CursorLockMode.None;
             Cursor.visible = true;
         }
@@ -179,6 +195,10 @@ public class InventoryUIController : MonoBehaviour
         {
             Cursor.lockState = previousCursorLockMode;
             Cursor.visible = previousCursorVisible;
+            if (selectionManager != null)
+            {
+                selectionManager.SetInteractionEnabled(previousInteractionEnabled);
+            }
         }
 
         panelOpen = open;
@@ -325,6 +345,7 @@ public class InventoryUIController : MonoBehaviour
         selectedOrder = null;
         UpdateItemDetails();
         RenderSlots();
+        UpdateDeliveryButton();
     }
     private void SelectPackage(int orderId)
     {
@@ -389,13 +410,17 @@ public class InventoryUIController : MonoBehaviour
             }
             else
             {
-                string dishName = "order #" + selectedOrder.OrderId;
-                if (selectedOrder.Recipe != null)
+                string destination = selectedOrder.CustomerName + " | " + selectedOrder.DeliveryAddress;
+                if (selectedOrder.CustomerNpc == null)
                 {
-                    dishName = selectedOrder.Recipe.RecipeName;
+                    destination += "\ndelivery location unavailable";
                 }
-                infoText.text = dishName + " x" + selectedOrder.ProducedCount + " | " +
-                    selectedOrder.CustomerName + " | " + selectedOrder.DeliveryAddress;
+                else if (deliveryInventory != null)
+                {
+                    float distance = deliveryInventory.DistanceToSelectedCustomer;
+                    destination += "\n" + distance.ToString("0.0") + "m away";
+                }
+                infoText.text = destination;
             }
         }
         if (deliveryTargetMarker != null)
@@ -451,10 +476,7 @@ public class InventoryUIController : MonoBehaviour
         bool canFill = false;
         if (isFood == true && selectedItem != null && selectedIngredientStation != null)
         {
-            if (selectedIngredientStation.Ingredient == selectedItem)
-            {
-                canFill = true;
-            }
+            canFill = selectedIngredientStation.CanFillFromInventory(selectedItem);
         }
         bool canDeliver = false;
         if (isShipping == true && deliveryInventory != null && deliveryInventory.SelectedPackage != null)
@@ -479,13 +501,28 @@ public class InventoryUIController : MonoBehaviour
             {
                 deliverButtonText.text = "use";
             }
-            else if (canDeliver)
+            else if (isShipping && deliveryInventory != null && deliveryInventory.SelectedPackage != null)
             {
-                deliverButtonText.text = "deliver";
+                if (deliveryInventory.CanDeliverSelectedPackage)
+                {
+                    deliverButtonText.text = "deliver";
+                }
+                else if (deliveryInventory.SelectedPackage.CustomerNpc == null)
+                {
+                    deliverButtonText.text = "no destination";
+                }
+                else
+                {
+                    deliverButtonText.text = "go " + deliveryInventory.DistanceToSelectedCustomer.ToString("0.0") + "m";
+                }
+            }
+            else if (isShipping)
+            {
+                deliverButtonText.text = "select package";
             }
             else
             {
-                deliverButtonText.text = "go to customer";
+                deliverButtonText.text = "go";
             }
         }
     }
@@ -494,7 +531,7 @@ public class InventoryUIController : MonoBehaviour
         if (currentPage == InventoryPage.Food)
         {
             if (selectedItem == null || selectedIngredientStation == null ||
-                selectedIngredientStation.Ingredient != selectedItem)
+                !selectedIngredientStation.CanFillFromInventory(selectedItem))
             {
                 return;
             }

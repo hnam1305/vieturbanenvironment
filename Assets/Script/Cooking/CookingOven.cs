@@ -2,12 +2,36 @@ using UnityEngine;
 using System.Collections.Generic;
 //holding batch list, each frame call Tick for each batch, when a batch is completed, call order.Addcookedresults to create shipbox then delete that batch from the list
 //and also send 2 events: progress per bacth for UI and the completed batch
-public class CookingOven : MonoBehaviour
+public class CookingOven : InteractableObject
 {
    
     private List<CookingBatch> cookingBatches = new List<CookingBatch>();
     public event System.Action<CookingBatch> OnBatchProgress; //update progress on UI
     public event System.Action<CookingBatch> OnBatchDone;
+    private CookingSession cookingSession;
+
+    public void SetCookingSession(CookingSession session)
+    {
+        cookingSession = session;
+    }
+
+    public override string GetInteractionPrompt()
+    {
+        if (cookingSession != null && cookingSession.HasStagedDish)
+        {
+            return "press k to cook";
+        }
+        return "oven";
+    }
+
+    public override bool HandleInteractionKey(KeyCode key)
+    {
+        if (key == KeyCode.K && cookingSession != null)
+        {
+            return cookingSession.StartCookingBatch();
+        }
+        return false;
+    }
     
 
     void Update()

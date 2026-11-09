@@ -20,5 +20,6 @@ public class ItemData : ScriptableObject
     public string description;
     public float limitPerBuying;
     public Sprite icon;
+    public GameObject worldPrefab;
 
 }

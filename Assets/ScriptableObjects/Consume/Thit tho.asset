@@ -12,9 +12,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 690e58f1e27948a4ebd16b6d11bcb6d7, type: 3}
   m_Name: Thit tho
   m_EditorClassIdentifier: Assembly-CSharp::ItemData
-  itemId: 
-  itemName: 
-  category: 0
+  itemId: thit_tho_bunnie
+  itemName: Thit Tho
+  category: 1
   sellType: 0
   basePriceBuy: 0
   description: 

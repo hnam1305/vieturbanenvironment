@@ -5,6 +5,50 @@ public class PlayerData
 {
     public int money = 200000;
     public List<InventoryEntries> inventory = new();
+    public List<StationStockEntry> stationStocks = new();
+
+    public bool TryGetStationStock(string stationId, out float amount)
+    {
+        amount = 0f;
+        if (string.IsNullOrEmpty(stationId))
+        {
+            return false;
+        }
+        if (stationStocks == null)
+        {
+            stationStocks = new List<StationStockEntry>();
+        }
+        foreach (StationStockEntry entry in stationStocks)
+        {
+            if (entry != null && entry.stationId == stationId)
+            {
+                amount = entry.amount;
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public void SetStationStock(string stationId, float amount)
+    {
+        if (string.IsNullOrEmpty(stationId))
+        {
+            return;
+        }
+        if (stationStocks == null)
+        {
+            stationStocks = new List<StationStockEntry>();
+        }
+        foreach (StationStockEntry entry in stationStocks)
+        {
+            if (entry != null && entry.stationId == stationId)
+            {
+                entry.amount = amount;
+                return;
+            }
+        }
+        stationStocks.Add(new StationStockEntry(stationId, amount));
+    }
 
     public void AddItem(string itemId, float amount)
     {
@@ -48,4 +92,17 @@ public class PlayerData
         return false;
     }
 
+}
+
+[System.Serializable]
+public class StationStockEntry
+{
+    public string stationId;
+    public float amount;
+
+    public StationStockEntry(string stationId, float amount)
+    {
+        this.stationId = stationId;
+        this.amount = amount;
+    }
 }

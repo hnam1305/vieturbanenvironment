@@ -6,6 +6,7 @@ public class DeliveryTargetMarker : MonoBehaviour
     [SerializeField] private RectTransform canvasRect;
     [SerializeField] private Camera targetCamera;
     [SerializeField, Min(0f)] private float edgePadding = 48f;
+    [SerializeField] private float rotationOffset = -90f;
     private Transform target;
     private void Awake()
     {
@@ -17,9 +18,13 @@ public class DeliveryTargetMarker : MonoBehaviour
         {
             targetCamera = Camera.main;
         }
-        if (canvasRect == null && marker != null && marker.root != null)
+        if (canvasRect == null && marker != null)
         {
-            canvasRect = marker.root as RectTransform;
+            Canvas canvas = marker.GetComponentInParent<Canvas>();
+            if (canvas != null)
+            {
+                canvasRect = canvas.transform as RectTransform;
+            }
         }
         gameObject.SetActive(false);
     }
@@ -44,10 +49,22 @@ public class DeliveryTargetMarker : MonoBehaviour
         screenPosition.x = Mathf.Clamp(screenPosition.x, edgePadding, Screen.width - edgePadding);
         screenPosition.y = Mathf.Clamp(screenPosition.y, edgePadding, Screen.height - edgePadding);
         Vector2 localPosition;
+        Camera canvasCamera = null;
+        Canvas canvas = canvasRect.GetComponentInParent<Canvas>();
+        if (canvas != null && canvas.renderMode != RenderMode.ScreenSpaceOverlay)
+        {
+            canvasCamera = canvas.worldCamera;
+        }
         if (RectTransformUtility.ScreenPointToLocalPointInRectangle(
-            canvasRect, screenPosition, null, out localPosition))
+            canvasRect, screenPosition, canvasCamera, out localPosition))
         {
             marker.anchoredPosition = localPosition;
+        }
+        Vector3 directionFromCenter = screenPosition - new Vector3(Screen.width * 0.5f, Screen.height * 0.5f, 0f);
+        if (directionFromCenter.sqrMagnitude > 0.001f)
+        {
+            float angle = Mathf.Atan2(directionFromCenter.y, directionFromCenter.x) * Mathf.Rad2Deg;
+            marker.rotation = Quaternion.Euler(0f, 0f, angle + rotationOffset);
         }
     }
 }
