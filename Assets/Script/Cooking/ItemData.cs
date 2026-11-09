@@ -1,7 +1,9 @@
 using UnityEngine;
 public enum ItemCategory
 {
-    FoodBuy, Fuel, Repair, FoodSell
+    FoodBuy = 0,
+    Consume = 1,
+    FoodSell = 3
 }
 public enum SellType
 {

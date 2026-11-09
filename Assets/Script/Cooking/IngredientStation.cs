@@ -10,6 +10,17 @@ public class IngredientStation : InteractableObject
     [SerializeField] private GameObject emptyVisual;
     [SerializeField] private ItemData ingredient;
     [SerializeField] private CookingSession cookingSession;
+
+    public ItemData Ingredient
+    {
+        get { return ingredient; }
+    }
+
+    public void FillFromInventory()
+    {
+        Fill(capacity);
+    }
+
     private void Start()
     {
         UpdateVisual();
