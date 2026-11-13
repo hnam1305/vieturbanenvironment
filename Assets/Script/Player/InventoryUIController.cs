@@ -426,11 +426,16 @@ public class InventoryUIController : MonoBehaviour
         if (deliveryTargetMarker != null)
         {
             Transform target = null;
+            Transform beamTarget = null;
             if (selectedOrder != null)
             {
                 target = selectedOrder.CustomerNpc;
+                if (selectedOrder.CustomerResident != null)
+                {
+                    beamTarget = selectedOrder.CustomerResident.transform;
+                }
             }
-            deliveryTargetMarker.SetTarget(target);
+            deliveryTargetMarker.SetTarget(target, beamTarget);
         }
     }
     private void ClearSelection()

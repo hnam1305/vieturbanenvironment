@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 using static Order;
@@ -6,6 +7,7 @@ public class OrderManager : MonoBehaviour
 {
     [SerializeField] private CookingSession cookingSession;
     [SerializeField] private ShippingShelf shippingShelf;
+    [SerializeField] private TimeController timeController;
     private List<Order> orders = new List<Order>();
     private Order selectedOrder;
     public IReadOnlyList<Order> Orders
@@ -201,8 +203,15 @@ public class OrderManager : MonoBehaviour
             return false;
         }
 
+        DateTime deliveredAt = DateTime.MinValue;
+        if (timeController != null)
+        {
+            deliveredAt = timeController.CurrentTime;
+        }
+        PlayerData playerData = GameSession.Current;
+        playerData.reputation = Mathf.Min(50, playerData.reputation + order.GetReputationChange(deliveredAt));
         playerWallet.AddMoney(order.Total);
-        SaveSystem.SaveGame(GameSession.Current);
+        SaveSystem.SaveGame(playerData);
         order.CustomerResident.SetHasPendingDelivery(false);
         Debug.Log("delivered order: " + order.OrderId);
         return true;

@@ -324,4 +324,47 @@ public class Order
         return true;
     }
 
+    public int GetReputationChange(DateTime deliveredAt)
+    {
+        bool hasViolation = false;
+        int change = 0;
+
+        if (producedCount < requiredCount)
+        {
+            change -= 7;
+            hasViolation = true;
+        }
+        else if (producedCount > requiredCount)
+        {
+            change -= 3;
+            hasViolation = true;
+        }
+
+        if (results != null)
+        {
+            foreach (CookingResult result in results)
+            {
+                if (result != null && !result.isCorrect)
+                {
+                    change -= 5;
+                    hasViolation = true;
+                    break;
+                }
+            }
+        }
+
+        if (HasDeliveryDeadline && deliveredAt > expectedDeliveryAt)
+        {
+            change -= 10;
+            hasViolation = true;
+        }
+
+        if (!hasViolation)
+        {
+            change = 5;
+        }
+
+        return change;
+    }
+
 }

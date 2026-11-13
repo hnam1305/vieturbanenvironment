@@ -206,6 +206,11 @@ public class CookingSession : InteractableObject
             Debug.Log("batch rejected dish");
             return false;
         }
+        if (plateVisual != null)
+        {
+            oven.StageDishVisual(currentBatch, plateVisual);
+            plateVisual = null;
+        }
         addedAmount.Clear();
         Debug.Log("dish added to batch");
         return true;

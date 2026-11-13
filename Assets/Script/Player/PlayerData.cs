@@ -4,8 +4,15 @@ using System.Collections.Generic;
 public class PlayerData
 {
     public int money = 200000;
+    public int reputation = 50;
+    public bool businessRegistered;
     public List<InventoryEntries> inventory = new();
     public List<StationStockEntry> stationStocks = new();
+
+    public bool CanSell
+    {
+        get { return businessRegistered && reputation > 0; }
+    }
 
     public bool TryGetStationStock(string stationId, out float amount)
     {
