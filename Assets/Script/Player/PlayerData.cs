@@ -6,12 +6,13 @@ public class PlayerData
     public int money = 200000;
     public int reputation = 50;
     public bool businessRegistered;
+    public bool businessSuspended;
     public List<InventoryEntries> inventory = new();
     public List<StationStockEntry> stationStocks = new();
 
     public bool CanSell
     {
-        get { return businessRegistered && reputation > 0; }
+        get { return businessRegistered && !businessSuspended && reputation >= 0; }
     }
 
     public bool TryGetStationStock(string stationId, out float amount)

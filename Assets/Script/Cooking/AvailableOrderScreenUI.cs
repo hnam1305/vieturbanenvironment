@@ -5,6 +5,7 @@ public class AvailableOrderScreenUI : MonoBehaviour
     [SerializeField] private OrderManager orderManager;
     [SerializeField] private OrderCardView orderCardPrefab;
     [SerializeField] private Transform orderCardContainer;
+    [SerializeField] private GameObject registrationRequiredNotice;
     [SerializeField, Min(0.1f)] private float refreshInterval = 0.5f;
     private readonly List<int> displayedOrderIds = new List<int>();
     private readonly List<OrderCardView> cardPool = new List<OrderCardView>();
@@ -29,6 +30,21 @@ public class AvailableOrderScreenUI : MonoBehaviour
         {
             return;
         }
+        bool canReceiveOrders = orderManager.CanReceiveOrders;
+        if (registrationRequiredNotice != null)
+        {
+            registrationRequiredNotice.SetActive(!canReceiveOrders);
+        }
+        if (!canReceiveOrders)
+        {
+            displayedOrderIds.Clear();
+            for (int index = 0; index < cardPool.Count; index++)
+            {
+                cardPool[index].gameObject.SetActive(false);
+            }
+            return;
+        }
+
         List<Order> availableOrders = new List<Order>();
         foreach (Order order in orderManager.Orders)
         {

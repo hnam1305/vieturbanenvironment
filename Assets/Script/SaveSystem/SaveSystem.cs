@@ -34,6 +34,14 @@ public class SaveSystem
             {
                 string json = File.ReadAllText(SaveFilePath);
                 PlayerData data = JsonUtility.FromJson<PlayerData>(json);
+                if (data != null && !json.Contains("\"reputation\""))
+                {
+                    data.reputation = 50;
+                }
+                if (data != null && !json.Contains("\"businessRegistered\""))
+                {
+                    data.businessRegistered = true;
+                }
                 Debug.Log($"loaded player, money: {data.money}");
                 return data;
 

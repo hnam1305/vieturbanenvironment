@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class GameSession
 {
@@ -26,5 +27,13 @@ public class GameSession
     {
         SaveSystem.DeleteGame();
         current = new PlayerData();
+    }
+
+    public static void RestartCurrentScene()
+    {
+        string sceneName = SceneManager.GetActiveScene().name;
+        Time.timeScale = 1f;
+        StartNewGame();
+        SceneManager.LoadScene(sceneName);
     }
 }

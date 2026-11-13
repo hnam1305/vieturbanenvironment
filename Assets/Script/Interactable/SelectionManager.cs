@@ -23,6 +23,19 @@ public class SelectionManager : MonoBehaviour
     public void SetInteractionEnabled(bool enabled)
     {
         interactionEnabled = enabled;
+        if (enabled == false)
+        {
+            HideInteractionPrompt();
+        }
+    }
+
+    public void HideInteractionPrompt()
+    {
+        currentInteractable = null;
+        if (interaction_Info_UI != null)
+        {
+            interaction_Info_UI.SetActive(false);
+        }
     }
 
     private void Start()
@@ -32,6 +45,12 @@ public class SelectionManager : MonoBehaviour
 
     void Update()
     {
+        if (interactionEnabled == false)
+        {
+            HideInteractionPrompt();
+            return;
+        }
+
         Ray ray = Camera.main.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0)); //camera.main: property built in tra ve main camera
                                                                     //input.mouseposition: vi tri chuot tren man hinh, dang vector 3
                                                                     //Camera.main.ScreenPointToRay: ham chuyen doi 1 diem 2d tren man hinh thanh 1 ray trong 3d, bat dau tu

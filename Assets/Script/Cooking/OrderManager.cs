@@ -17,11 +17,22 @@ public class OrderManager : MonoBehaviour
         }
 
     }
+    private void Awake()
+    {
+        if (timeController == null)
+        {
+            timeController = FindFirstObjectByType<TimeController>();
+        }
+    }
     public Order SelectedOrder
     {
         get { 
             return selectedOrder;
         }
+    }
+    public bool CanReceiveOrders
+    {
+        get { return GameSession.Current.CanSell; }
     }
     //mng order lsist
     public void AddOrder(Order order)
@@ -69,6 +80,12 @@ public class OrderManager : MonoBehaviour
     //Accepting an order does not start cooking.
     public bool AcceptOrder(int orderId)
     {
+        if (!CanReceiveOrders)
+        {
+            Debug.Log("business registration required");
+            return false;
+        }
+
         Order order = GetOrderById(orderId);
         if (order == null)
         {
@@ -210,6 +227,15 @@ public class OrderManager : MonoBehaviour
         }
         PlayerData playerData = GameSession.Current;
         playerData.reputation = Mathf.Min(50, playerData.reputation + order.GetReputationChange(deliveredAt));
+        if (playerData.reputation < 0)
+        {
+            GameSession.RestartCurrentScene();
+            return true;
+        }
+        if (playerData.reputation == 0)
+        {
+            playerData.businessSuspended = true;
+        }
         playerWallet.AddMoney(order.Total);
         SaveSystem.SaveGame(playerData);
         order.CustomerResident.SetHasPendingDelivery(false);
