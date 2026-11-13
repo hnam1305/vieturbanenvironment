@@ -226,7 +226,7 @@ public class OrderManager : MonoBehaviour
             deliveredAt = timeController.CurrentTime;
         }
         PlayerData playerData = GameSession.Current;
-        playerData.reputation = Mathf.Min(50, playerData.reputation + order.GetReputationChange(deliveredAt));
+        playerWallet.SetReputation(playerData.reputation + order.GetReputationChange(deliveredAt));
         if (playerData.reputation < 0)
         {
             GameSession.RestartCurrentScene();

@@ -43,16 +43,16 @@ public class BusinessAuthority : MonoBehaviour
 
         if (!playerData.businessRegistered)
         {
-            SetDialogueText("register your business to unlock orders and selling. fee: " + registrationFee.ToString("N0") + "đ");
+            SetDialogueText("Register your business to unlock orders and selling. Fee: " + registrationFee.ToString("N0") + "đ");
             return;
         }
         if (playerData.businessSuspended)
         {
-            SetDialogueText("your business is suspended. pay the reputation fine to reopen selling. fee: " + reputationFine.ToString("N0") + "đ. reputation: " + playerData.reputation);
+            SetDialogueText("Your business is suspended. Pay the reputation fine to reopen selling. Fee: " + reputationFine.ToString("N0") + "đ. reputation: " + playerData.reputation);
             return;
         }
 
-        SetDialogueText("your business is active. reputation: " + playerData.reputation);
+        SetDialogueText("Your business is active. Reputation: " + playerData.reputation);
     }
 
     public void RegisterBusiness()
@@ -65,14 +65,14 @@ public class BusinessAuthority : MonoBehaviour
         }
         if (playerWallet == null || !playerWallet.TrySpend(registrationFee))
         {
-            SetDialogueText("not enough money to register. fee: " + registrationFee.ToString("N0") + "đ");
+            SetDialogueText("Not enough money to register. Fee: " + registrationFee.ToString("N0") + "đ");
             return;
         }
 
         playerData.businessRegistered = true;
         SaveSystem.SaveGame(playerData);
         UpdateButtonVisibility(playerData);
-        SetDialogueText("business registered. you can now receive orders and trade.");
+        SetDialogueText("Business registered. You can now receive orders and trade.");
     }
 
     public void PayReputationFine()
@@ -85,14 +85,14 @@ public class BusinessAuthority : MonoBehaviour
         }
         if (playerWallet == null || !playerWallet.TrySpend(reputationFine))
         {
-            SetDialogueText("not enough money to pay the reputation fine. fee: " + reputationFine.ToString("N0") + "đ");
+            SetDialogueText("Not enough money to pay the reputation fine. Fee: " + reputationFine.ToString("N0") + "đ");
             return;
         }
 
         playerData.businessSuspended = false;
         SaveSystem.SaveGame(playerData);
         UpdateButtonVisibility(playerData);
-        SetDialogueText("fine paid. selling is available again. reputation remains " + playerData.reputation + ".");
+        SetDialogueText("Fine paid. Selling is available again. Reputation remains " + playerData.reputation + ".");
     }
 
     private void UpdateButtonVisibility(PlayerData playerData)
