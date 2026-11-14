@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::StaminaConfig
   maximumStamina: 100
   cookingDrainPerGameMinute: 1
-  shippingDrainPerGameMinute: 2
+  shippingDrainPerGameMinute: 1
   restingRecoveryPerGameMinute: 2
   sleepingRecoveryPerGameMinute: 8
   sleepTimeMultiplier: 8
