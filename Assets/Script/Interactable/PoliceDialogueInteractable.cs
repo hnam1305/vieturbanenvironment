@@ -25,7 +25,7 @@ public class PoliceDialogueInteractable : InteractableObject
 
     public override string GetInteractionPrompt()
     {
-        return "click to talk with police";
+        return "Click to talk with police";
     }
 
     public override void Interact()

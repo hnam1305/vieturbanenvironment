@@ -10,13 +10,15 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 690e58f1e27948a4ebd16b6d11bcb6d7, type: 3}
-  m_Name: Thit tho
+  m_Name: Chuoi
   m_EditorClassIdentifier: Assembly-CSharp::ItemData
-  itemId: thit_tho_bunnie
-  itemName: Thit Tho
+  itemId: bunch_banana
+  itemName: Banana
   category: 1
   sellType: 0
-  basePriceBuy: 0
+  basePriceBuy: 20000
   description: 
   limitPerBuying: 0
-  icon: {fileID: 0}
+  icon: {fileID: 21300000, guid: b6395a0ea35b7a04f8c49f20a91d9e2c, type: 3}
+  worldPrefab: {fileID: 3355626302234992199, guid: 7b7a60980f07021488b8f2c94a96f93c, type: 3}
+  staminaRestore: 5

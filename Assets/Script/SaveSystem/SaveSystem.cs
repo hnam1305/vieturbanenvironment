@@ -38,6 +38,10 @@ public class SaveSystem
                 {
                     data.reputation = 50;
                 }
+                if (data != null && !json.Contains("\"stamina\""))
+                {
+                    data.stamina = 100f;
+                }
                 if (data != null && !json.Contains("\"businessRegistered\""))
                 {
                     data.businessRegistered = true;

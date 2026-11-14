@@ -13,6 +13,7 @@ public class InventoryUIController : MonoBehaviour
     [SerializeField] private ItemDatabase itemDatabase;
     [SerializeField] private DeliveryInventory deliveryInventory;
     [SerializeField] private SelectionManager selectionManager;
+    [SerializeField] private PlayerStamina playerStamina;
     [SerializeField, Min(1)] private int maxSlots = 64;
     [Header("tabs and grid")]
     [SerializeField] private Button foodTabButton;
@@ -49,6 +50,10 @@ public class InventoryUIController : MonoBehaviour
     private bool previousInteractionEnabled;
     private void Awake()
     {
+        if (playerStamina == null)
+        {
+            playerStamina = FindFirstObjectByType<PlayerStamina>();
+        }
         if (deliveryTargetMarker == null)
         {
             deliveryTargetMarker = FindAnyObjectByType<DeliveryTargetMarker>(FindObjectsInactive.Include);
@@ -82,6 +87,10 @@ public class InventoryUIController : MonoBehaviour
     }
     private void Start()
     {
+        if (playerStamina != null)
+        {
+            playerStamina.StaminaChanged += HandleStaminaChanged;
+        }
         if (deliveryInventory != null)
         {
             deliveryInventory.PackagesChanged += HandlePackagesChanged;
@@ -138,6 +147,10 @@ public class InventoryUIController : MonoBehaviour
         {
             deliveryInventory.PackagesChanged -= HandlePackagesChanged;
             deliveryInventory.SelectedPackageChanged -= HandleSelectedPackageChanged;
+        }
+        if (playerStamina != null)
+        {
+            playerStamina.StaminaChanged -= HandleStaminaChanged;
         }
         if (panelOpen == true)
         {
@@ -378,7 +391,12 @@ public class InventoryUIController : MonoBehaviour
             }
             else
             {
-                infoText.text = selectedItem.itemName + " - " + FormatAmount(selectedItem, selectedItemAmount);
+                string itemDetails = selectedItem.itemName + " - " + FormatAmount(selectedItem, selectedItemAmount);
+                if (selectedItem.category == ItemCategory.Consume)
+                {
+                    itemDetails += "\n+" + selectedItem.staminaRestore.ToString("0.##") + " stamina";
+                }
+                infoText.text = itemDetails;
             }
         }
         if (deliveryTargetMarker != null)
@@ -491,10 +509,16 @@ public class InventoryUIController : MonoBehaviour
                 canDeliver = true;
             }
         }
+        bool canConsume = false;
+        if (currentPage == InventoryPage.Consume && selectedItem != null && playerStamina != null &&
+            selectedItem.staminaRestore > 0f && selectedItemAmount >= 1f && !playerStamina.IsFull)
+        {
+            canConsume = true;
+        }
         if (deliverButton != null)
         {
             deliverButton.gameObject.SetActive(true);
-            deliverButton.interactable = canFill || canDeliver;
+            deliverButton.interactable = canFill || canConsume || canDeliver;
         }
         if (deliverButtonText != null)
         {
@@ -545,6 +569,18 @@ public class InventoryUIController : MonoBehaviour
             RefreshCurrentPage();
             return;
         }
+        if (currentPage == InventoryPage.Consume)
+        {
+            if (selectedItem == null || playerStamina == null || selectedItem.staminaRestore <= 0f ||
+                playerStamina.IsFull || !GameSession.Current.TryRemove(selectedItem.itemId, 1f))
+            {
+                return;
+            }
+            playerStamina.Restore(selectedItem.staminaRestore);
+            SaveSystem.SaveGame(GameSession.Current);
+            RefreshCurrentPage();
+            return;
+        }
         if (currentPage != InventoryPage.Shipping || deliveryInventory == null ||
             !deliveryInventory.TryDeliverSelectedPackage())
         {
@@ -569,6 +605,15 @@ public class InventoryUIController : MonoBehaviour
             UpdateDeliveryButton();
         }
     }
+
+    private void HandleStaminaChanged(float stamina, float maximumStamina)
+    {
+        if (panelOpen && currentPage == InventoryPage.Consume)
+        {
+            UpdateDeliveryButton();
+        }
+    }
+
     private string FormatAmount(ItemData item, float amount)
     {
         if (item != null && item.sellType == SellType.Gram)

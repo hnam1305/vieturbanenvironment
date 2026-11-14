@@ -21,5 +21,6 @@ public class ItemData : ScriptableObject
     public float limitPerBuying;
     public Sprite icon;
     public GameObject worldPrefab;
+    [Min(0f)] public float staminaRestore;
 
 }

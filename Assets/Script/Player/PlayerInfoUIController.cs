@@ -5,10 +5,13 @@ using UnityEngine.UI;
 public class PlayerInfoUIController : MonoBehaviour
 {
     [SerializeField] private PlayerWallet playerWallet;
+    [SerializeField] private PlayerStamina playerStamina;
     [SerializeField] private TMP_Text moneyText;
     [SerializeField] private TMP_Text moneyChangeText;
     [SerializeField] private TMP_Text reputationText;
     [SerializeField] private Image reputationFill;
+    [SerializeField] private TMP_Text staminaText;
+    [SerializeField] private Image staminaFill;
     [SerializeField, Min(0.1f)] private float moneyChangeDisplayDuration = 2f;
     [SerializeField] private Color moneyGainColor = Color.green;
     [SerializeField] private Color moneySpendColor = Color.red;
@@ -19,6 +22,10 @@ public class PlayerInfoUIController : MonoBehaviour
         {
             playerWallet = FindFirstObjectByType<PlayerWallet>();
         }
+        if (playerStamina == null)
+        {
+            playerStamina = FindFirstObjectByType<PlayerStamina>();
+        }
         if (playerWallet != null)
         {
             playerWallet.MoneyChange += UpdateMoney;
@@ -26,6 +33,11 @@ public class PlayerInfoUIController : MonoBehaviour
             playerWallet.ReputationChanged += UpdateReputation;
             UpdateMoney(playerWallet.Money);
             UpdateReputation(playerWallet.Reputation);
+        }
+        if (playerStamina != null)
+        {
+            playerStamina.StaminaChanged += UpdateStamina;
+            UpdateStamina(playerStamina.Current, playerStamina.Maximum);
         }
         if (moneyChangeText != null)
         {
@@ -41,6 +53,10 @@ public class PlayerInfoUIController : MonoBehaviour
             playerWallet.MoneyChange -= UpdateMoney;
             playerWallet.MoneyTransaction -= ShowMoneyChange;
             playerWallet.ReputationChanged -= UpdateReputation;
+        }
+        if (playerStamina != null)
+        {
+            playerStamina.StaminaChanged -= UpdateStamina;
         }
     }
 
@@ -92,6 +108,18 @@ public class PlayerInfoUIController : MonoBehaviour
         if (reputationFill != null)
         {
             reputationFill.fillAmount = Mathf.Clamp01(reputation / 50f);
+        }
+    }
+
+    private void UpdateStamina(float stamina, float maximumStamina)
+    {
+        if (staminaText != null)
+        {
+            staminaText.text = Mathf.CeilToInt(stamina) + "/" + Mathf.CeilToInt(maximumStamina);
+        }
+        if (staminaFill != null && maximumStamina > 0f)
+        {
+            staminaFill.fillAmount = Mathf.Clamp01(stamina / maximumStamina);
         }
     }
 }

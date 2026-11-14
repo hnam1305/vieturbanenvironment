@@ -5,6 +5,7 @@ public class PlayerData
 {
     public int money = 200000;
     public int reputation = 50;
+    public float stamina = 100f;
     public bool businessRegistered;
     public bool businessSuspended;
     public List<InventoryEntries> inventory = new();
