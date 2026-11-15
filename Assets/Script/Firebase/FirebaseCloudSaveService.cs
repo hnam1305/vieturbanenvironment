@@ -1,0 +1,136 @@
+using System;
+using System.Collections;
+using System.Threading.Tasks;
+using Firebase.Auth;
+using UnityEngine;
+using UnityEngine.Networking;
+
+public class FirebaseCloudSaveService : MonoBehaviour
+{
+    [SerializeField] private string databaseUrl;
+    private static FirebaseCloudSaveService instance;
+    private Coroutine pendingSave;
+
+    private void Awake()
+    {
+        if (instance != null && instance != this)
+        {
+            Destroy(gameObject);
+            return;
+        }
+        instance = this;
+        DontDestroyOnLoad(gameObject);
+    }
+
+    public static void LoadForUser(FirebaseUser user, Action<PlayerData> completed)
+    {
+        if (instance == null || user == null || string.IsNullOrWhiteSpace(instance.databaseUrl))
+        {
+            completed(null);
+            return;
+        }
+        instance.StartCoroutine(instance.LoadRoutine(user, completed));
+    }
+
+    public static void QueueSave(PlayerData data)
+    {
+        if (instance == null || data == null)
+        {
+            return;
+        }
+        FirebaseUser user = FirebaseAuth.DefaultInstance.CurrentUser;
+        if (user == null || string.IsNullOrWhiteSpace(instance.databaseUrl))
+        {
+            return;
+        }
+        if (instance.pendingSave != null)
+        {
+            instance.StopCoroutine(instance.pendingSave);
+        }
+        instance.pendingSave = instance.StartCoroutine(instance.SaveRoutine(user, data));
+    }
+
+    private IEnumerator LoadRoutine(FirebaseUser user, Action<PlayerData> completed)
+    {
+        Task<string> tokenTask = user.TokenAsync(false);
+        while (!tokenTask.IsCompleted)
+        {
+            yield return null;
+        }
+        if (tokenTask.IsFaulted || tokenTask.IsCanceled)
+        {
+            completed(null);
+            yield break;
+        }
+
+        string url = BuildSaveUrl(user.UserId, tokenTask.Result);
+        using (UnityWebRequest request = UnityWebRequest.Get(url))
+        {
+            yield return request.SendWebRequest();
+            if (request.result != UnityWebRequest.Result.Success)
+            {
+                Debug.Log("cloud save download failed");
+                completed(null);
+                yield break;
+            }
+
+            string json = request.downloadHandler.text;
+            if (string.IsNullOrWhiteSpace(json) || json == "null")
+            {
+                PlayerData localData = SaveSystem.LoadGame();
+                if (localData == null)
+                {
+                    localData = new PlayerData();
+                }
+                SaveSystem.SaveLocalOnly(localData);
+                StartCoroutine(SaveRoutine(user, localData));
+                completed(localData);
+                yield break;
+            }
+
+            PlayerData cloudData = JsonUtility.FromJson<PlayerData>(json);
+            if (cloudData == null)
+            {
+                completed(null);
+                yield break;
+            }
+            SaveSystem.SaveLocalOnly(cloudData);
+            completed(cloudData);
+        }
+    }
+
+    private IEnumerator SaveRoutine(FirebaseUser user, PlayerData data)
+    {
+        Task<string> tokenTask = user.TokenAsync(false);
+        while (!tokenTask.IsCompleted)
+        {
+            yield return null;
+        }
+        if (tokenTask.IsFaulted || tokenTask.IsCanceled)
+        {
+            pendingSave = null;
+            yield break;
+        }
+
+        string json = JsonUtility.ToJson(data);
+        byte[] body = System.Text.Encoding.UTF8.GetBytes(json);
+        using (UnityWebRequest request = new UnityWebRequest(BuildSaveUrl(user.UserId, tokenTask.Result), "PUT"))
+        {
+            request.uploadHandler = new UploadHandlerRaw(body);
+            request.downloadHandler = new DownloadHandlerBuffer();
+            request.SetRequestHeader("Content-Type", "application/json");
+            yield return request.SendWebRequest();
+            if (request.result != UnityWebRequest.Result.Success)
+            {
+                Debug.Log("cloud save upload failed");
+            }
+        }
+        pendingSave = null;
+    }
+
+    private string BuildSaveUrl(string userId, string token)
+    {
+        string root = databaseUrl.TrimEnd('/');
+        return root + "/players/" + UnityWebRequest.EscapeURL(userId) + "/save.json?auth=" + UnityWebRequest.EscapeURL(token);
+    }
+}

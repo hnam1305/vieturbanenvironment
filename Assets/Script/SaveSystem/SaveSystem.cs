@@ -19,7 +19,17 @@ public class SaveSystem
     {
         if (data == null)
         {
-            Debug.LogWarning("nothing to save");
+            Debug.Log("nothing to save");
+            return;
+        }
+        SaveLocalOnly(data);
+        FirebaseCloudSaveService.QueueSave(data);
+    }
+
+    public static void SaveLocalOnly(PlayerData data)
+    {
+        if (data == null)
+        {
             return;
         }
         string json = JsonUtility.ToJson(data, true);
@@ -52,7 +62,7 @@ public class SaveSystem
             }
             else
             {
-                Debug.LogWarning("save file not found");
+                Debug.Log("save file not found");
                 return null;
             }
         }
@@ -73,7 +83,7 @@ public class SaveSystem
         }
         else
         {
-            Debug.LogWarning("no file to delete");
+            Debug.Log("no file to delete");
         }
     }
 }

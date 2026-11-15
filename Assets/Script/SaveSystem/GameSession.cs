@@ -29,6 +29,14 @@ public class GameSession
         current = new PlayerData();
     }
 
+    public static void SetCurrent(PlayerData data)
+    {
+        if (data != null)
+        {
+            current = data;
+        }
+    }
+
     public static void RestartCurrentScene()
     {
         string sceneName = SceneManager.GetActiveScene().name;
