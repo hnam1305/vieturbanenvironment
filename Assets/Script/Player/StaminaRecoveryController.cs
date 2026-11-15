@@ -25,11 +25,11 @@ public class StaminaRecoveryController : MonoBehaviour
     {
         if (playerStamina == null)
         {
-            playerStamina = FindFirstObjectByType<PlayerStamina>();
+            playerStamina = FindAnyObjectByType<PlayerStamina>();
         }
         if (selectionManager == null)
         {
-            selectionManager = FindFirstObjectByType<SelectionManager>();
+            selectionManager = FindAnyObjectByType<SelectionManager>();
         }
         if (recoveryPanelRoot != null)
         {

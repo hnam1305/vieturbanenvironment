@@ -20,11 +20,11 @@ public class PlayerInfoUIController : MonoBehaviour
     {
         if (playerWallet == null)
         {
-            playerWallet = FindFirstObjectByType<PlayerWallet>();
+            playerWallet = FindAnyObjectByType<PlayerWallet>();
         }
         if (playerStamina == null)
         {
-            playerStamina = FindFirstObjectByType<PlayerStamina>();
+            playerStamina = FindAnyObjectByType<PlayerStamina>();
         }
         if (playerWallet != null)
         {

@@ -53,19 +53,19 @@ public class PlayerStamina : MonoBehaviour
     {
         if (timeController == null)
         {
-            timeController = FindFirstObjectByType<TimeController>();
+            timeController = FindAnyObjectByType<TimeController>();
         }
         if (orderManager == null)
         {
-            orderManager = FindFirstObjectByType<OrderManager>();
+            orderManager = FindAnyObjectByType<OrderManager>();
         }
         if (deliveryInventory == null)
         {
-            deliveryInventory = FindFirstObjectByType<DeliveryInventory>();
+            deliveryInventory = FindAnyObjectByType<DeliveryInventory>();
         }
         if (playerCharacterController == null)
         {
-            playerCharacterController = FindFirstObjectByType<CharacterController>();
+            playerCharacterController = FindAnyObjectByType<CharacterController>();
         }
         ClampCurrentStamina();
     }

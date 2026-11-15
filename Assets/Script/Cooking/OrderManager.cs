@@ -21,7 +21,7 @@ public class OrderManager : MonoBehaviour
     {
         if (timeController == null)
         {
-            timeController = FindFirstObjectByType<TimeController>();
+            timeController = FindAnyObjectByType<TimeController>();
         }
     }
     public Order SelectedOrder

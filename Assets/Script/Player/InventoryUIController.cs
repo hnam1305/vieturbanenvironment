@@ -52,7 +52,7 @@ public class InventoryUIController : MonoBehaviour
     {
         if (playerStamina == null)
         {
-            playerStamina = FindFirstObjectByType<PlayerStamina>();
+            playerStamina = FindAnyObjectByType<PlayerStamina>();
         }
         if (deliveryTargetMarker == null)
         {
