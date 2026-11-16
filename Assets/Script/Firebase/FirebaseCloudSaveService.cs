@@ -47,7 +47,27 @@ public class FirebaseCloudSaveService : MonoBehaviour
         {
             instance.StopCoroutine(instance.pendingSave);
         }
-        instance.pendingSave = instance.StartCoroutine(instance.SaveRoutine(user, data));
+        instance.pendingSave = instance.StartCoroutine(instance.SaveRoutine(user, data, null));
+    }
+
+    public static void SaveImmediately(PlayerData data, Action<bool> completed)
+    {
+        if (instance == null || data == null)
+        {
+            completed(false);
+            return;
+        }
+        FirebaseUser user = FirebaseAuth.DefaultInstance.CurrentUser;
+        if (user == null || string.IsNullOrWhiteSpace(instance.databaseUrl))
+        {
+            completed(false);
+            return;
+        }
+        if (instance.pendingSave != null)
+        {
+            instance.StopCoroutine(instance.pendingSave);
+        }
+        instance.pendingSave = instance.StartCoroutine(instance.SaveRoutine(user, data, completed));
     }
 
     private IEnumerator LoadRoutine(FirebaseUser user, Action<PlayerData> completed)
@@ -66,6 +86,7 @@ public class FirebaseCloudSaveService : MonoBehaviour
         string url = BuildSaveUrl(user.UserId, tokenTask.Result);
         using (UnityWebRequest request = UnityWebRequest.Get(url))
         {
+            request.timeout = 15;
             yield return request.SendWebRequest();
             if (request.result != UnityWebRequest.Result.Success)
             {
@@ -83,7 +104,7 @@ public class FirebaseCloudSaveService : MonoBehaviour
                     localData = new PlayerData();
                 }
                 SaveSystem.SaveLocalOnly(localData);
-                StartCoroutine(SaveRoutine(user, localData));
+                StartCoroutine(SaveRoutine(user, localData, null));
                 completed(localData);
                 yield break;
             }
@@ -99,7 +120,7 @@ public class FirebaseCloudSaveService : MonoBehaviour
         }
     }
 
-    private IEnumerator SaveRoutine(FirebaseUser user, PlayerData data)
+    private IEnumerator SaveRoutine(FirebaseUser user, PlayerData data, Action<bool> completed)
     {
         Task<string> tokenTask = user.TokenAsync(false);
         while (!tokenTask.IsCompleted)
@@ -109,6 +130,7 @@ public class FirebaseCloudSaveService : MonoBehaviour
         if (tokenTask.IsFaulted || tokenTask.IsCanceled)
         {
             pendingSave = null;
+            if (completed != null) completed(false);
             yield break;
         }
 
@@ -116,6 +138,7 @@ public class FirebaseCloudSaveService : MonoBehaviour
         byte[] body = System.Text.Encoding.UTF8.GetBytes(json);
         using (UnityWebRequest request = new UnityWebRequest(BuildSaveUrl(user.UserId, tokenTask.Result), "PUT"))
         {
+            request.timeout = 15;
             request.uploadHandler = new UploadHandlerRaw(body);
             request.downloadHandler = new DownloadHandlerBuffer();
             request.SetRequestHeader("Content-Type", "application/json");
@@ -123,9 +146,13 @@ public class FirebaseCloudSaveService : MonoBehaviour
             if (request.result != UnityWebRequest.Result.Success)
             {
                 Debug.Log("cloud save upload failed");
+                pendingSave = null;
+                if (completed != null) completed(false);
+                yield break;
             }
         }
         pendingSave = null;
+        if (completed != null) completed(true);
     }
 
     private string BuildSaveUrl(string userId, string token)

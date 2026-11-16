@@ -4959,6 +4959,51 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 688942850}
   m_CullTransparentMesh: 1
+--- !u!1 &698203495
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 698203497}
+  - component: {fileID: 698203496}
+  m_Layer: 0
+  m_Name: FirebaseCloudSaveServices
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &698203496
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 698203495}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cf5ec9c316710894f874375b15b826f7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::FirebaseCloudSaveService
+  databaseUrl: https://vieturbanlifesimulation-default-rtdb.asia-southeast1.firebasedatabase.app/
+--- !u!4 &698203497
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 698203495}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 716.10046, y: 645.06934, z: 1631.8452}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &709930625
 GameObject:
   m_ObjectHideFlags: 0
@@ -14857,6 +14902,7 @@ MonoBehaviour:
   profileMessageBg: {fileID: 2063690583}
   profileMessageIcon: {fileID: 1182008601}
   profileMessageText: {fileID: 649245833}
+  gameSceneName: SampleScene
   inputFieldSprite: {fileID: 21300000, guid: 54714ddaac8c1b244855205d30ee08d6, type: 3}
   inputReadonlySprite: {fileID: 21300000, guid: ef851318699ad43438b3ce969622268b, type: 3}
   errorBarSprite: {fileID: 21300000, guid: 2659b26d10c6ecc4ab9887d728c12cae, type: 3}
@@ -16113,3 +16159,4 @@ SceneRoots:
   - {fileID: 1854849875}
   - {fileID: 978899240}
   - {fileID: 1989212176}
+  - {fileID: 698203497}
