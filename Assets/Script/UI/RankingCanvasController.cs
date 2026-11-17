@@ -1,6 +1,7 @@
 using System.Linq;
 using Firebase.Auth;
 using UnityEngine;
+using UnityEngine.InputSystem;
 using UnityEngine.UI;
 
 public class RankingCanvasController : MonoBehaviour
@@ -18,12 +19,46 @@ public class RankingCanvasController : MonoBehaviour
 
     private Transform myRankTransform;
     private bool refreshInProgress;
+    private GameObject rankingPanel;
 
     private void Start()
     {
+        Transform panelTransform = transform.Find("LeaderBoardPanel");
+        rankingPanel = panelTransform != null ? panelTransform.gameObject : null;
+        if (rankingPanel != null)
+        {
+            rankingPanel.SetActive(false);
+            Button closeButton = rankingPanel.transform.Find("CloseButton")?.GetComponent<Button>();
+            if (closeButton != null) closeButton.onClick.AddListener(ToggleRanking);
+        }
         FindMyRankRow();
+    }
+
+    private void Update()
+    {
+        if (Keyboard.current != null && Keyboard.current.zKey.wasPressedThisFrame)
+        {
+            ToggleRanking();
+        }
+    }
+
+    public void ToggleRanking()
+    {
+        if (rankingPanel == null) return;
+        if (rankingPanel.activeSelf) CloseRanking();
+        else OpenRanking();
+    }
+
+    public void OpenRanking()
+    {
+        if (rankingPanel == null) return;
+        rankingPanel.SetActive(true);
         Refresh();
-        Invoke(nameof(Refresh), 3f);
+    }
+
+    public void CloseRanking()
+    {
+        if (rankingPanel != null) rankingPanel.SetActive(false);
     }
 
     public void Refresh()
