@@ -34,7 +34,7 @@ public class MainMenuUI : MonoBehaviour
         ContinueButton.interactable = false;
         if (statusText != null)
         {
-            statusText.text = "Saving new game...";
+            statusText.text = "saving new game...";
         }
         GameSession.StartNewGame();
         SaveSystem.SaveLocalOnly(GameSession.Current);
@@ -48,7 +48,7 @@ public class MainMenuUI : MonoBehaviour
             Debug.Log("new game cloud save failed");
             if (statusText != null)
             {
-                statusText.text = "Cloud save failed. Check your connection and retry.";
+                statusText.text = "cloud save failed. check your connection and retry.";
             }
             NewGameButton.interactable = true;
             ContinueButton.interactable = false;

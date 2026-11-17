@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Threading.Tasks;
+using System.Text.RegularExpressions;
 using Firebase.Auth;
 using UnityEngine;
 using UnityEngine.Networking;
@@ -10,6 +11,104 @@ public class FirebaseCloudSaveService : MonoBehaviour
     [SerializeField] private string databaseUrl;
     private static FirebaseCloudSaveService instance;
     private Coroutine pendingSave;
+
+    [Serializable]
+    public class LeaderboardEntry
+    {
+        public string uid;
+        public string username;
+        public int money;
+    }
+
+    public static void LoadLeaderboard(Action<LeaderboardEntry[]> completed)
+    {
+        if (instance == null || string.IsNullOrWhiteSpace(instance.databaseUrl))
+        {
+            completed?.Invoke(Array.Empty<LeaderboardEntry>());
+            return;
+        }
+        FirebaseUser user = FirebaseAuth.DefaultInstance.CurrentUser;
+        if (user == null)
+        {
+            completed?.Invoke(Array.Empty<LeaderboardEntry>());
+            return;
+        }
+        instance.StartCoroutine(instance.LoadLeaderboardRoutine(user, completed));
+    }
+
+    public static void QueueLeaderboardEntry(PlayerData data)
+    {
+        FirebaseUser user = FirebaseAuth.DefaultInstance.CurrentUser;
+        if (instance == null || data == null || user == null || string.IsNullOrWhiteSpace(instance.databaseUrl)) return;
+        instance.StartCoroutine(instance.WriteLeaderboardRoutine(user, data));
+    }
+
+    private IEnumerator LoadLeaderboardRoutine(FirebaseUser user, Action<LeaderboardEntry[]> completed)
+    {
+        Task<string> tokenTask = user.TokenAsync(false);
+        while (!tokenTask.IsCompleted) yield return null;
+        if (tokenTask.IsFaulted || tokenTask.IsCanceled)
+        {
+            completed?.Invoke(Array.Empty<LeaderboardEntry>());
+            yield break;
+        }
+
+        string url = databaseUrl.TrimEnd('/') + "/leaderboard.json?auth=" + UnityWebRequest.EscapeURL(tokenTask.Result);
+        using (UnityWebRequest request = UnityWebRequest.Get(url))
+        {
+            request.timeout = 15;
+            yield return request.SendWebRequest();
+            if (request.result != UnityWebRequest.Result.Success)
+            {
+                Debug.LogWarning("Leaderboard download failed: " + request.error);
+                completed?.Invoke(Array.Empty<LeaderboardEntry>());
+                yield break;
+            }
+
+            string json = request.downloadHandler.text;
+            var entries = new System.Collections.Generic.List<LeaderboardEntry>();
+            MatchCollection matches = Regex.Matches(json, "\\\"(?<uid>[^\\\"]+)\\\"\\s*:\\s*\\{(?<body>[^{}]*)\\}");
+            foreach (Match match in matches)
+            {
+                string body = match.Groups["body"].Value;
+                string username = Regex.Match(body, "\\\"username\\\"\\s*:\\s*(?<value>\\\"(?:\\\\.|[^\\\"])*\\\")").Groups["value"].Value;
+                string moneyValue = Regex.Match(body, "\\\"money\\\"\\s*:\\s*(?<value>-?\\d+)").Groups["value"].Value;
+                if (string.IsNullOrEmpty(moneyValue)) continue;
+                string wrapped = "{\"username\":" + username + "}";
+                string decodedName = JsonUtility.FromJson<NameWrapper>(wrapped)?.username;
+                int.TryParse(moneyValue, out int money);
+                entries.Add(new LeaderboardEntry { uid = match.Groups["uid"].Value, username = decodedName, money = money });
+            }
+            completed?.Invoke(entries.ToArray());
+        }
+    }
+
+    [Serializable] private class NameWrapper { public string username; }
+
+    private IEnumerator WriteLeaderboardRoutine(FirebaseUser user, PlayerData data)
+    {
+        Task<string> tokenTask = user.TokenAsync(false);
+        while (!tokenTask.IsCompleted) yield return null;
+        if (tokenTask.IsFaulted || tokenTask.IsCanceled) yield break;
+
+        LeaderboardEntry entry = new LeaderboardEntry
+        {
+            uid = user.UserId,
+            username = string.IsNullOrWhiteSpace(user.DisplayName) ? "Player" : user.DisplayName,
+            money = data.money
+        };
+        byte[] body = System.Text.Encoding.UTF8.GetBytes(JsonUtility.ToJson(entry));
+        string url = databaseUrl.TrimEnd('/') + "/leaderboard/" + UnityWebRequest.EscapeURL(user.UserId) + ".json?auth=" + UnityWebRequest.EscapeURL(tokenTask.Result);
+        using (UnityWebRequest request = new UnityWebRequest(url, "PUT"))
+        {
+            request.timeout = 15;
+            request.uploadHandler = new UploadHandlerRaw(body);
+            request.downloadHandler = new DownloadHandlerBuffer();
+            request.SetRequestHeader("Content-Type", "application/json");
+            yield return request.SendWebRequest();
+            if (request.result != UnityWebRequest.Result.Success) Debug.LogWarning("Leaderboard upload failed: " + request.error);
+        }
+    }
 
     private void Awake()
     {
@@ -105,6 +204,7 @@ public class FirebaseCloudSaveService : MonoBehaviour
                 }
                 SaveSystem.SaveLocalOnly(localData);
                 StartCoroutine(SaveRoutine(user, localData, null));
+                QueueLeaderboardEntry(localData);
                 completed(localData);
                 yield break;
             }
@@ -116,6 +216,7 @@ public class FirebaseCloudSaveService : MonoBehaviour
                 yield break;
             }
             SaveSystem.SaveLocalOnly(cloudData);
+            QueueLeaderboardEntry(cloudData);
             completed(cloudData);
         }
     }
@@ -152,6 +253,7 @@ public class FirebaseCloudSaveService : MonoBehaviour
             }
         }
         pendingSave = null;
+        QueueLeaderboardEntry(data);
         if (completed != null) completed(true);
     }
 

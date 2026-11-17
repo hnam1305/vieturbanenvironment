@@ -16,6 +16,7 @@ public class FirebaseController : MonoBehaviour
     [SerializeField] private GameObject signUpPanel;
     [SerializeField] private GameObject profilePanel;
     [SerializeField] private GameObject resetPasswordPanel;
+    [SerializeField] private AccountMenuController accountMenuController;
     [Header("Login / Sign up")]
     [SerializeField] private GameObject loginError;
     [SerializeField] private GameObject signUpError;
@@ -36,19 +37,6 @@ public class FirebaseController : MonoBehaviour
     [SerializeField] private TMP_Text resetMessageText;
     [SerializeField] private Button resetSendButton;
     [SerializeField] private TMP_Text resetSendButtonText;
-    [Header("Profile panel")]
-    [SerializeField] private TMP_Text userName;
-    [SerializeField] private TMP_Text email;
-    [SerializeField] private TMP_InputField password;
-    [SerializeField] private Image passwordBg;
-    [SerializeField] private TMP_Text passwordLabel;
-    [SerializeField] private TMP_Text passwordPlaceholder;
-    [SerializeField] private GameObject confirmPasswordButton;
-    [SerializeField] private GameObject cancelPasswordButton;
-    [SerializeField] private GameObject profileMessageRow;
-    [SerializeField] private Image profileMessageBg;
-    [SerializeField] private Image profileMessageIcon;
-    [SerializeField] private TMP_Text profileMessageText;
     [Header("Scene flow")]
     [SerializeField] private string gameSceneName = "SampleScene";
     [Header("Sprites")]
@@ -66,10 +54,14 @@ public class FirebaseController : MonoBehaviour
     private bool accountSaveReady;
     private void Awake()
     {
+        if (accountMenuController == null)
+        {
+            accountMenuController = GetComponent<AccountMenuController>();
+        }
         loginError.SetActive(false);
         signUpError.SetActive(false);
         resetMessageRow.SetActive(false);
-        profileMessageRow.SetActive(false);
+        HideProfileMessage();
         loginPanel.SetActive(true);
         signUpPanel.SetActive(false);
         profilePanel.SetActive(false);
@@ -122,7 +114,12 @@ public class FirebaseController : MonoBehaviour
             ShowLoginError("Please log in to view your profile");
             return;
         }
-        FillProfile(auth.CurrentUser.DisplayName, auth.CurrentUser.Email);
+        if (accountMenuController == null)
+        {
+            Debug.Log("account menu controller is not assigned");
+            return;
+        }
+        accountMenuController.PopulateProfile(auth.CurrentUser);
         ShowPanel(profilePanel);
     }
     public void CloseProfile()
@@ -133,6 +130,7 @@ public class FirebaseController : MonoBehaviour
         {
             if (accountSaveReady)
             {
+                if (accountMenuController != null) accountMenuController.CloseProfile();
                 SceneManager.LoadScene(gameSceneName);
             }
             else
@@ -198,15 +196,11 @@ public class FirebaseController : MonoBehaviour
     public void LogOut()
     {
         accountSaveReady = false;
-        if (auth != null)
+        if (accountMenuController != null)
         {
-            auth.SignOut();
+            accountMenuController.LogOut();
         }
-        userName.text = "";
-        email.text = "";
-        password.text = "";
         ClearAuthFields();
-        OpenLoginPage();
     }
     private void CreateUser(string mail, string pass, string name)
     {
@@ -260,7 +254,7 @@ public class FirebaseController : MonoBehaviour
                 GameSession.SetCurrent(data);
                 accountSaveReady = true;
             }
-            ShowProfile(signedIn.DisplayName, signedIn.Email);
+            ShowProfile();
             if (!accountSaveReady)
             {
                 ShowProfileMessage("Could not load your cloud save. Check your connection and try again", false);
@@ -358,93 +352,33 @@ public class FirebaseController : MonoBehaviour
     }
     public void EnterPasswordEditMode()
     {
-        HideProfileMessage();
-        password.text = "";
-        password.interactable = true;
-        passwordBg.sprite = inputFieldSprite;
-        passwordLabel.text = "New password";
-        passwordPlaceholder.text = "Enter new password";
-        confirmPasswordButton.SetActive(true);
-        cancelPasswordButton.SetActive(true);
-        password.ActivateInputField();
+        if (accountMenuController != null)
+        {
+            accountMenuController.EnterPasswordEditMode();
+        }
     }
     public void CancelPasswordEdit()
     {
-        ExitPasswordEditMode();
-        HideProfileMessage();
+        if (accountMenuController != null) accountMenuController.CancelPasswordEdit();
     }
     public void ConfirmPasswordChange()
     {
-        HideProfileMessage();
-        if (auth == null || auth.CurrentUser == null)
-        {
-            ShowProfileMessage("You are not signed in", false);
-            return;
-        }
-        string newPass = password.text;
-        if (newPass.Length < 6)
-        {
-            ShowProfileMessage("Password must have at least 6 characters", false);
-            return;
-        }
-        auth.CurrentUser.UpdatePasswordAsync(newPass).ContinueWithOnMainThread(task =>
-        {
-            if (task.IsCanceled || task.IsFaulted)
-            {
-                Debug.LogError("Change password failed: " + task.Exception);
-                FirebaseException firebaseEx = null;
-                if (task.Exception != null)
-                {
-                    firebaseEx = task.Exception.GetBaseException() as FirebaseException;
-                }
-                if (firebaseEx != null && (AuthError)firebaseEx.ErrorCode == AuthError.RequiresRecentLogin)
-                {
-                    ShowProfileMessage("Please log out and log in again, then change your password", false);
-                }
-                else
-                {
-                    ShowProfileMessage("Could not change password. Please try again", false);
-                }
-                return;
-            }
-            ExitPasswordEditMode();
-            ShowProfileMessage("Password changed successfully", true);
-        });
+        if (accountMenuController != null) accountMenuController.ConfirmPasswordChange();
     }
     private void ExitPasswordEditMode()
     {
-        password.text = "";
-        password.interactable = false;
-        passwordBg.sprite = inputReadonlySprite;
-        passwordLabel.text = "Password";
-        passwordPlaceholder.text = "••••••••";
-        confirmPasswordButton.SetActive(false);
-        cancelPasswordButton.SetActive(false);
+        if (accountMenuController != null) accountMenuController.CancelPasswordEdit();
     }
-    private void ShowProfile(string name, string mail)
+    private void ShowProfile()
     {
-        FillProfile(name, mail);
+        if (accountMenuController == null)
+        {
+            Debug.Log("account menu controller is not assigned");
+            return;
+        }
+        accountMenuController.PopulateProfile(auth.CurrentUser);
         ClearAuthFields();
         ShowPanel(profilePanel);
-    }
-    private void FillProfile(string name, string mail)
-    {
-        if (string.IsNullOrEmpty(name))
-        {
-            userName.text = "";
-        }
-        else
-        {
-            userName.text = name;
-        }
-        if (string.IsNullOrEmpty(mail))
-        {
-            email.text = "";
-        }
-        else
-        {
-            email.text = mail;
-        }
     }
     private void ClearAuthFields()
     {
@@ -492,11 +426,11 @@ public class FirebaseController : MonoBehaviour
     }
     private void ShowProfileMessage(string message, bool success)
     {
-        SetMessage(profileMessageRow, profileMessageBg, profileMessageIcon, profileMessageText, message, success);
+        if (accountMenuController != null) accountMenuController.ShowProfileMessage(message, success);
     }
     private void HideProfileMessage()
     {
-        profileMessageRow.SetActive(false);
+        if (accountMenuController != null) accountMenuController.HideProfileMessageFromAuth();
     }
     private void SetMessage(GameObject row, Image bg, Image icon, TMP_Text text, string message, bool success)
     {
