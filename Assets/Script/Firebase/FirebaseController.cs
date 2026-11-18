@@ -224,10 +224,10 @@ public class FirebaseController : MonoBehaviour
             if (task.IsCanceled || task.IsFaulted)
             {
                 Debug.LogError("Update profile failed: " + task.Exception);
-                LoadAccountAndShowProfile(newUser);
+                LoadAccountAndShowProfile(newUser, true);
                 return;
             }
-            LoadAccountAndShowProfile(newUser);
+            LoadAccountAndShowProfile(newUser, true);
         });
     }
     private void SignInUser(string mail, string pass)
@@ -241,10 +241,10 @@ public class FirebaseController : MonoBehaviour
                 return;
             }
             FirebaseUser signedIn = task.Result.User;
-            LoadAccountAndShowProfile(signedIn);
+            LoadAccountAndShowProfile(signedIn, false);
         });
     }
-    private void LoadAccountAndShowProfile(FirebaseUser signedIn)
+    private void LoadAccountAndShowProfile(FirebaseUser signedIn, bool startFreshIfCloudSaveMissing)
     {
         accountSaveReady = false;
         FirebaseCloudSaveService.LoadForUser(signedIn, delegate(PlayerData data)
@@ -259,7 +259,7 @@ public class FirebaseController : MonoBehaviour
             {
                 ShowProfileMessage("Could not load your cloud save. Check your connection and try again", false);
             }
-        });
+        }, startFreshIfCloudSaveMissing);
     }
     public void ForgetPassword()
     {

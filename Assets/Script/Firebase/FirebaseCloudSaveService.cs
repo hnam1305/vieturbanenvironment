@@ -121,14 +121,14 @@ public class FirebaseCloudSaveService : MonoBehaviour
         DontDestroyOnLoad(gameObject);
     }
 
-    public static void LoadForUser(FirebaseUser user, Action<PlayerData> completed)
+    public static void LoadForUser(FirebaseUser user, Action<PlayerData> completed, bool startFreshIfMissing = false)
     {
         if (instance == null || user == null || string.IsNullOrWhiteSpace(instance.databaseUrl))
         {
             completed(null);
             return;
         }
-        instance.StartCoroutine(instance.LoadRoutine(user, completed));
+        instance.StartCoroutine(instance.LoadRoutine(user, completed, startFreshIfMissing));
     }
 
     public static void QueueSave(PlayerData data)
@@ -153,12 +153,16 @@ public class FirebaseCloudSaveService : MonoBehaviour
     {
         if (instance == null || data == null)
         {
+            Debug.LogError("Cloud save unavailable: service instance or player data is missing.");
             completed(false);
             return;
         }
         FirebaseUser user = FirebaseAuth.DefaultInstance.CurrentUser;
         if (user == null || string.IsNullOrWhiteSpace(instance.databaseUrl))
         {
+            Debug.LogError(user == null
+                ? "Cloud save unavailable: no Firebase user is signed in."
+                : "Cloud save unavailable: Realtime Database URL is empty.");
             completed(false);
             return;
         }
@@ -169,7 +173,7 @@ public class FirebaseCloudSaveService : MonoBehaviour
         instance.pendingSave = instance.StartCoroutine(instance.SaveRoutine(user, data, completed));
     }
 
-    private IEnumerator LoadRoutine(FirebaseUser user, Action<PlayerData> completed)
+    private IEnumerator LoadRoutine(FirebaseUser user, Action<PlayerData> completed, bool startFreshIfMissing)
     {
         Task<string> tokenTask = user.TokenAsync(false);
         while (!tokenTask.IsCompleted)
@@ -179,6 +183,15 @@ public class FirebaseCloudSaveService : MonoBehaviour
         if (tokenTask.IsFaulted || tokenTask.IsCanceled)
         {
             completed(null);
+            yield break;
+        }
+
+        if (startFreshIfMissing)
+        {
+            PlayerData freshData = new PlayerData();
+            SaveSystem.SaveLocalOnly(freshData);
+            StartCoroutine(SaveRoutine(user, freshData, null));
+            completed(freshData);
             yield break;
         }
 
@@ -204,7 +217,6 @@ public class FirebaseCloudSaveService : MonoBehaviour
                 }
                 SaveSystem.SaveLocalOnly(localData);
                 StartCoroutine(SaveRoutine(user, localData, null));
-                QueueLeaderboardEntry(localData);
                 completed(localData);
                 yield break;
             }
@@ -246,7 +258,8 @@ public class FirebaseCloudSaveService : MonoBehaviour
             yield return request.SendWebRequest();
             if (request.result != UnityWebRequest.Result.Success)
             {
-                Debug.Log("cloud save upload failed");
+                Debug.LogError("Cloud save upload failed. HTTP " + request.responseCode + ": " + request.error +
+                    " Response: " + request.downloadHandler.text);
                 pendingSave = null;
                 if (completed != null) completed(false);
                 yield break;
