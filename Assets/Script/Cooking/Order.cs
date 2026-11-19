@@ -166,6 +166,8 @@ public class Order
         this.requiredCount = requiredCount;
         this.orderId = orderId;
         this.unitPrice = unitPrice;
+        this.producedCount = 0;
+        this.results = new List<CookingResult>();
         this.customerNpc = null;
         this.customerName = string.Empty;
         this.deliveryAddress = string.Empty;

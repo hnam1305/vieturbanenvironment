@@ -95,6 +95,10 @@ public class IngredientStation : InteractableObject
             Debug.Log("start an order first");
             return;
         }
+        if (cookingSession.HasPickedIngredientForCurrentDish)
+        {
+            return;
+        }
         float taken = Take();
         if (taken <= 0f)
         {
@@ -113,6 +117,10 @@ public class IngredientStation : InteractableObject
         if (cookingSession == null || cookingSession.CanAccept == false)
         {
             return "start an order first";
+        }
+        if (cookingSession.HasPickedIngredientForCurrentDish)
+        {
+            return "pick one per batch";
         }
         return "click to add ingredient";
     }

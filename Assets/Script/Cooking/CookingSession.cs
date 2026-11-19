@@ -25,6 +25,11 @@ public class CookingSession : InteractableObject
         get { return addedAmount.Count > 0; }
     }
 
+    public bool HasPickedIngredientForCurrentDish
+    {
+        get { return addedAmount.Count > 0; }
+    }
+
     public bool HasStagedDish
     {
         get { return currentBatch != null && currentBatch.StagedCount > 0; }
@@ -150,24 +155,27 @@ public class CookingSession : InteractableObject
             return new CookingResult();
         }
         CookingResult result = new CookingResult();
-        HashSet<string> recipeId = new HashSet<string>();
+        HashSet<string> recipeIds = new HashSet<string>();
         foreach (RecipeIngredient need in currentRecipe.Ingredients)
         {
-            addedAmount.TryGetValue(need.ingredient.itemId, out float have);
-            recipeId.Add(need.ingredient.itemId);
-            if (have < need.amount)
+            if (need == null || need.ingredient == null)
+            {
+                continue;
+            }
+
+            recipeIds.Add(need.ingredient.itemId);
+        }
+
+        foreach (string ingredientId in recipeIds)
+        {
+            if (!addedAmount.TryGetValue(ingredientId, out float have) || have <= 0f)
             {
                 result.ingredientMissingCount++;
             }
-            if (have > need.amount)
-            {
-                result.ingredientExtraCount++;
-            }
-
         }
         foreach (var pair in addedAmount)
         {
-            if (!recipeId.Contains(pair.Key))
+            if (!recipeIds.Contains(pair.Key))
             {
                 result.ingredientExtraCount++;
             }
@@ -206,6 +214,7 @@ public class CookingSession : InteractableObject
             Debug.Log("batch rejected dish");
             return false;
         }
+        ReplacePlateWithDishVisual(result);
         if (plateVisual != null)
         {
             oven.StageDishVisual(currentBatch, plateVisual);
@@ -215,6 +224,24 @@ public class CookingSession : InteractableObject
         Debug.Log("dish added to batch");
         return true;
     } //assign the dish which is just maked to the oven
+
+    private void ReplacePlateWithDishVisual(CookingResult result)
+    {
+        if (plateVisualRoot == null || currentRecipe == null)
+        {
+            return;
+        }
+
+        GameObject dishPrefab = result.isCorrect ? currentRecipe.CompletedDish : currentRecipe.IncompletedDish;
+        if (dishPrefab == null)
+        {
+            return;
+        }
+
+        ClearPlateVisuals();
+        plateVisual = Instantiate(dishPrefab, plateVisualRoot.position, plateVisualRoot.rotation);
+        plateVisual.transform.localScale = dishPrefab.transform.localScale * plateVisualScale;
+    }
 
     public bool StartCookingBatch()
     {
