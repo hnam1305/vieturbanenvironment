@@ -186,7 +186,7 @@ public class PlayerStamina : MonoBehaviour
         RaiseStaminaChanged();
         if (playerData.stamina <= 0f)
         {
-            GameSession.RestartCurrentScene();
+            GameSession.RestartCurrentScenePreservingData();
         }
     }
 

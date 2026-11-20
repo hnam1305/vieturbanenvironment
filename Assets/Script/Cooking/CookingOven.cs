@@ -61,6 +61,7 @@ public class CookingOven : InteractableObject
                     
                 }
                 ClearBatchVisuals(batch);
+                ShowCookedDishVisuals(batch);
             }
         }  
         
@@ -127,6 +128,36 @@ public class CookingOven : InteractableObject
             count += pair.Value.Count;
         }
         return count;
+    }
+
+    private void ShowCookedDishVisuals(CookingBatch batch)
+    {
+        if (batch == null || batch.Order == null || batch.Order.Recipe == null)
+        {
+            return;
+        }
+
+        Transform visualRoot = ovenVisualRoot != null ? ovenVisualRoot : transform;
+        foreach (CookingResult result in batch.Results)
+        {
+            if (result == null)
+            {
+                continue;
+            }
+
+            GameObject prefab = result.isCorrect
+                ? batch.Order.Recipe.CompletedDish
+                : batch.Order.Recipe.IncompletedDish;
+            if (prefab == null)
+            {
+                continue;
+            }
+
+            int index = visualRoot.childCount;
+            GameObject cookedDish = Instantiate(prefab, visualRoot);
+            cookedDish.transform.localPosition = ovenVisualOffset + Vector3.right * ovenVisualSpacing * index;
+            cookedDish.transform.localRotation = Quaternion.identity;
+        }
     }
 
     private void ClearBatchVisuals(CookingBatch batch)

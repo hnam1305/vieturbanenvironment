@@ -18,16 +18,16 @@ public class CookingSession : InteractableObject
     [SerializeField] private Transform plateVisualRoot;
     [SerializeField] private float plateVisualScale = 0.5f;
     private Dictionary<string, float> addedAmount = new Dictionary<string, float>();
-    private GameObject plateVisual;
+    private List<GameObject> plateVisuals = new List<GameObject>();
 
     public bool HasIngredientsOnPlate
     {
         get { return addedAmount.Count > 0; }
     }
 
-    public bool HasPickedIngredientForCurrentDish
+    public bool HasIngredientOnPlate(ItemData ingredient)
     {
-        get { return addedAmount.Count > 0; }
+        return ingredient != null && addedAmount.ContainsKey(ingredient.itemId);
     }
 
     public bool HasStagedDish
@@ -99,18 +99,15 @@ public class CookingSession : InteractableObject
     }
     public void AddedIngredient(ItemData ingredient, float amount)
     {
-        if (CanAccept == false)
+        if (CanAccept == false || ingredient == null || amount <= 0f)
         {
             return;
         }
-        if (addedAmount.TryGetValue(ingredient.itemId, out float currentAmount))
+        if (addedAmount.ContainsKey(ingredient.itemId))
         {
-            addedAmount[ingredient.itemId] = currentAmount + amount;
+            return;
         }
-        else
-        {
-            addedAmount[ingredient.itemId] = amount;
-        }
+        addedAmount[ingredient.itemId] = amount;
         AddPlateVisual(ingredient);
         foreach (var pair in addedAmount)
         {
@@ -130,21 +127,82 @@ public class CookingSession : InteractableObject
             Debug.Log("ingredient world prefab is missing");
             return;
         }
-        if (plateVisual == null)
+        Transform visualRoot = FindIngredientVisualRoot(ingredient);
+        if (visualRoot == null)
         {
-            plateVisual = Instantiate(ingredient.worldPrefab, plateVisualRoot.position, plateVisualRoot.rotation);
-            plateVisual.transform.localScale = ingredient.worldPrefab.transform.localScale * plateVisualScale;
-            Debug.Log("plate visual spawned");
+            Debug.Log("dish point is missing");
+            return;
         }
+
+        GameObject visual = Instantiate(ingredient.worldPrefab, visualRoot.position, visualRoot.rotation);
+        // Set the world scale before parenting so a scaled DishPoint hierarchy
+        // cannot enlarge the ingredient unexpectedly.
+        visual.transform.localScale = ingredient.worldPrefab.transform.localScale * plateVisualScale;
+        visual.transform.SetParent(visualRoot, true);
+        if (visualRoot == plateVisualRoot)
+        {
+            visual.transform.position += Vector3.right * plateVisuals.Count * 0.2f;
+        }
+        plateVisuals.Add(visual);
+    }
+
+    private Transform FindIngredientVisualRoot(ItemData ingredient)
+    {
+        if (ingredient == null)
+        {
+            return plateVisualRoot;
+        }
+
+        string itemName = NormalizeAnchorName(ingredient.itemName);
+        if (itemName.Length > 0)
+        {
+            Transform[] children = GetComponentsInChildren<Transform>(true);
+            foreach (Transform child in children)
+            {
+                if (child == transform || child == plateVisualRoot)
+                {
+                    continue;
+                }
+
+                string childName = NormalizeAnchorName(child.name);
+                if (childName == "dishpoint" + itemName || childName == itemName + "dishpoint")
+                {
+                    return child;
+                }
+            }
+        }
+
+        return plateVisualRoot;
+    }
+
+    private static string NormalizeAnchorName(string value)
+    {
+        if (string.IsNullOrEmpty(value))
+        {
+            return string.Empty;
+        }
+
+        System.Text.StringBuilder normalized = new System.Text.StringBuilder(value.Length);
+        foreach (char character in value)
+        {
+            if (char.IsLetterOrDigit(character))
+            {
+                normalized.Append(char.ToLowerInvariant(character));
+            }
+        }
+        return normalized.ToString();
     }
 
     private void ClearPlateVisuals()
     {
-        if (plateVisual != null)
+        foreach (GameObject visual in plateVisuals)
         {
-            Destroy(plateVisual);
-            plateVisual = null;
+            if (visual != null)
+            {
+                Destroy(visual);
+            }
         }
+        plateVisuals.Clear();
     }
     public CookingResult Evaluate()
     {
@@ -214,34 +272,18 @@ public class CookingSession : InteractableObject
             Debug.Log("batch rejected dish");
             return false;
         }
-        ReplacePlateWithDishVisual(result);
-        if (plateVisual != null)
+        foreach (GameObject visual in plateVisuals)
         {
-            oven.StageDishVisual(currentBatch, plateVisual);
-            plateVisual = null;
+            if (visual != null)
+            {
+                oven.StageDishVisual(currentBatch, visual);
+            }
         }
+        plateVisuals.Clear();
         addedAmount.Clear();
         Debug.Log("dish added to batch");
         return true;
     } //assign the dish which is just maked to the oven
-
-    private void ReplacePlateWithDishVisual(CookingResult result)
-    {
-        if (plateVisualRoot == null || currentRecipe == null)
-        {
-            return;
-        }
-
-        GameObject dishPrefab = result.isCorrect ? currentRecipe.CompletedDish : currentRecipe.IncompletedDish;
-        if (dishPrefab == null)
-        {
-            return;
-        }
-
-        ClearPlateVisuals();
-        plateVisual = Instantiate(dishPrefab, plateVisualRoot.position, plateVisualRoot.rotation);
-        plateVisual.transform.localScale = dishPrefab.transform.localScale * plateVisualScale;
-    }
 
     public bool StartCookingBatch()
     {

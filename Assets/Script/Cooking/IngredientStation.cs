@@ -95,7 +95,7 @@ public class IngredientStation : InteractableObject
             Debug.Log("start an order first");
             return;
         }
-        if (cookingSession.HasPickedIngredientForCurrentDish)
+        if (cookingSession.HasIngredientOnPlate(ingredient))
         {
             return;
         }
@@ -118,7 +118,7 @@ public class IngredientStation : InteractableObject
         {
             return "start an order first";
         }
-        if (cookingSession.HasPickedIngredientForCurrentDish)
+        if (cookingSession.HasIngredientOnPlate(ingredient))
         {
             return "pick one per batch";
         }

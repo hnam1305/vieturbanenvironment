@@ -19,6 +19,6 @@ MonoBehaviour:
   basePriceBuy: 20000
   description: 
   limitPerBuying: 10000
-  icon: {fileID: 21300000, guid: b6395a0ea35b7a04f8c49f20a91d9e2c, type: 3}
+  icon: {fileID: 21300000, guid: 32e430e844eb87141b6fa256f25c74c0, type: 3}
   worldPrefab: {fileID: 3355626302234992199, guid: 7b7a60980f07021488b8f2c94a96f93c, type: 3}
   staminaRestore: 5

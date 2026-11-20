@@ -44,4 +44,12 @@ public class GameSession
         StartNewGame();
         SceneManager.LoadScene(sceneName);
     }
+
+    public static void RestartCurrentScenePreservingData()
+    {
+        string sceneName = SceneManager.GetActiveScene().name;
+        Time.timeScale = 1f;
+        SaveSystem.SaveGame(Current);
+        SceneManager.LoadScene(sceneName);
+    }
 }
