@@ -15,10 +15,12 @@ MonoBehaviour:
   itemId: sausage
   itemName: Sausage
   category: 0
-  sellType: 0
+  sellType: 1
   basePriceBuy: 10000
   description: 
   limitPerBuying: 100
   icon: {fileID: 21300000, guid: 32978e97cecd27d4cb5769b617e42fd4, type: 3}
-  worldPrefab: {fileID: 7731843890891076234, guid: 53646a4941d5a754ba7fa7664f325dea, type: 3}
+  worldPrefab: {fileID: 4823037768168656018, guid: 8fbaa76fbfec3234c83590d2d1024f13, type: 3}
+  cookingVisualSize: 0.14
+  cookingVisualRotation: {x: 0, y: 0, z: 0}
   staminaRestore: 0

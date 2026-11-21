@@ -134,16 +134,54 @@ public class CookingSession : InteractableObject
             return;
         }
 
-        GameObject visual = Instantiate(ingredient.worldPrefab, visualRoot.position, visualRoot.rotation);
+        Quaternion visualRotation = visualRoot.rotation * Quaternion.Euler(ingredient.cookingVisualRotation);
+        GameObject visual = Instantiate(ingredient.worldPrefab, visualRoot.position, visualRotation);
         // Set the world scale before parenting so a scaled DishPoint hierarchy
         // cannot enlarge the ingredient unexpectedly.
         visual.transform.localScale = ingredient.worldPrefab.transform.localScale * plateVisualScale;
+        if (ingredient.cookingVisualSize > 0f)
+        {
+            Bounds prefabBounds;
+            if (TryGetVisualBounds(visual, out prefabBounds))
+            {
+                float largestDimension = Mathf.Max(prefabBounds.size.x, prefabBounds.size.y, prefabBounds.size.z);
+                if (largestDimension > 0f)
+                {
+                    visual.transform.localScale *= ingredient.cookingVisualSize / largestDimension;
+                }
+            }
+        }
         visual.transform.SetParent(visualRoot, true);
         if (visualRoot == plateVisualRoot)
         {
             visual.transform.position += Vector3.right * plateVisuals.Count * 0.2f;
         }
         plateVisuals.Add(visual);
+    }
+
+    private static bool TryGetVisualBounds(GameObject visual, out Bounds bounds)
+    {
+        Renderer[] renderers = visual.GetComponentsInChildren<Renderer>(true);
+        bool foundRenderer = false;
+        bounds = new Bounds(visual.transform.position, Vector3.zero);
+        foreach (Renderer renderer in renderers)
+        {
+            if (renderer == null)
+            {
+                continue;
+            }
+
+            if (!foundRenderer)
+            {
+                bounds = renderer.bounds;
+                foundRenderer = true;
+            }
+            else
+            {
+                bounds.Encapsulate(renderer.bounds);
+            }
+        }
+        return foundRenderer;
     }
 
     private Transform FindIngredientVisualRoot(ItemData ingredient)

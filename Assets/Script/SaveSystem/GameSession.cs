@@ -42,14 +42,16 @@ public class GameSession
         string sceneName = SceneManager.GetActiveScene().name;
         Time.timeScale = 1f;
         StartNewGame();
-        SceneManager.LoadScene(sceneName);
-    }
-
-    public static void RestartCurrentScenePreservingData()
-    {
-        string sceneName = SceneManager.GetActiveScene().name;
-        Time.timeScale = 1f;
-        SaveSystem.SaveGame(Current);
-        SceneManager.LoadScene(sceneName);
+        // Persist fresh defaults locally, then replace any in-flight cloud save
+        // and wait for the fresh profile upload before reloading the scene.
+        SaveSystem.SaveLocalOnly(Current);
+        FirebaseCloudSaveService.SaveImmediately(Current, delegate(bool saved)
+        {
+            if (!saved)
+            {
+                Debug.LogWarning("Fresh profile is saved locally, but cloud sync failed.");
+            }
+            SceneManager.LoadScene(sceneName);
+        });
     }
 }
