@@ -15,6 +15,7 @@ public class NpcResidentData
 public class NpcPopulationSpawner : MonoBehaviour
 {
     [SerializeField] private NpcController npcPrefab;
+    [SerializeField] private List<NpcController> npcPrefabs = new List<NpcController>();
     [SerializeField] private Transform player;
     [SerializeField, Min(1)] private int populationSize = 8;
     [SerializeField] private bool spawnAcrossWholeNavMesh = true;
@@ -60,7 +61,7 @@ public class NpcPopulationSpawner : MonoBehaviour
 
     private void SpawnPopulation()
     {
-        if (npcPrefab == null || residents.Count == 0 || houseEntrances == null || houseEntrances.Length < 2)
+        if (GetAvailableNpcPrefabCount() == 0 || residents.Count == 0 || houseEntrances == null || houseEntrances.Length < 2)
         {
             Debug.Log("npc population needs a prefab, residents and house entrances", this);
             return;
@@ -94,13 +95,57 @@ public class NpcPopulationSpawner : MonoBehaviour
                 continue;
             }
 
-            NpcController resident = Instantiate(npcPrefab, spawnPosition, Quaternion.identity, transform);
+            NpcController selectedPrefab = GetRandomNpcPrefab();
+            NpcController resident = Instantiate(selectedPrefab, spawnPosition, Quaternion.identity, transform);
             resident.Configure(residentData.behaviorType, residentData.residentName, residentData.deliveryAddress,
                 residentData.homeEntrance, houseEntrances, shopSpots, parkSpots, activityVisitChance,
                 roamingRadius, minTimeRoaming, maxTimeRoaming);
             activeResidents.Add(resident);
             spawnPositions.Add(spawnPosition);
         }
+    }
+
+    private int GetAvailableNpcPrefabCount()
+    {
+        int count = 0;
+        foreach (NpcController prefab in npcPrefabs)
+        {
+            if (prefab != null)
+            {
+                count++;
+            }
+        }
+
+        if (count == 0 && npcPrefab != null)
+        {
+            count = 1;
+        }
+        return count;
+    }
+
+    private NpcController GetRandomNpcPrefab()
+    {
+        int count = GetAvailableNpcPrefabCount();
+        if (count == 1 && npcPrefabs.Count == 0)
+        {
+            return npcPrefab;
+        }
+
+        int selectedIndex = UnityEngine.Random.Range(0, count);
+        foreach (NpcController prefab in npcPrefabs)
+        {
+            if (prefab == null)
+            {
+                continue;
+            }
+            if (selectedIndex == 0)
+            {
+                return prefab;
+            }
+            selectedIndex--;
+        }
+
+        return npcPrefab;
     }
 
     private bool TryGetSpawnPosition(out Vector3 spawnPosition)
